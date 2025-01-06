@@ -662,10 +662,7 @@ function tetrate(self: AlyaNum, number: AlyaNum): AlyaNum
 		end
 		return ONE -- 0^^any odd number = 1
 
-	elseif equalsOne(self) then -- 1^^y = 1
-		return ONE
-
-	elseif number.sign == 0 then -- x^^0 = 1
+	elseif equalsOne(self) or number.sign == 0 then -- 1^^y = 1 || x^^0 = 1
 		return ONE
 
 	elseif equalsOne(number) then -- x^^1 = x
@@ -692,7 +689,7 @@ function tetrate(self: AlyaNum, number: AlyaNum): AlyaNum
 	local revertedTetrate = toNumber(number)
 	local floored = math.floor(revertedTetrate)
 	local result = pow(self, AlyaNum.new(revertedTetrate - floored))
-	local check: AlyaNum
+	local check = ZERO
 	local count = 0
 	for i = 1, 100 do -- maximum times to perform algorithm is 100, should be enough for any number
 		if not (floored ~= 0 and lessThan(result, MAX_ADD)) then
@@ -701,7 +698,7 @@ function tetrate(self: AlyaNum, number: AlyaNum): AlyaNum
 		count += 1
 		if floored > 0 then
 			result = pow(self, result)
-			if check ~= nil and equals(check, result) then -- nothing happens so just break
+			if equals(check, result) then -- nothing happens so just break
 				floored = 0
 				break
 			end
@@ -709,7 +706,7 @@ function tetrate(self: AlyaNum, number: AlyaNum): AlyaNum
 			floored -= 1
 		else
 			result = log(result, self) -- log since its negative now
-			if check ~= nil and equals(check, result) then
+			if equals(check, result) then
 				floored = 0
 				break
 			end
@@ -734,10 +731,7 @@ function pentate(self: AlyaNum, number: AlyaNum): AlyaNum
 		end
 		return ONE
 
-	elseif equalsOne(self) then
-		return ONE
-
-	elseif number.sign == 0 then
+	elseif equalsOne(self) or number.sign == 0 then
 		return ONE
 
 	elseif equalsOne(number) then
@@ -768,8 +762,8 @@ function pentate(self: AlyaNum, number: AlyaNum): AlyaNum
 	end
 	local revertedPentate = toNumber(number)
 	local floored = math.floor(revertedPentate)
-	local result = tetrate(self, AlyaNum.new(revertedPentate - floored))
-	local check: AlyaNum
+	local result = pow(self, AlyaNum.new(revertedPentate - floored))
+	local check = ZERO
 	local count = 0
 	for i = 1, 100 do
 		if not (floored ~= 0 and lessThan(result, MAX_ADD)) then
@@ -778,7 +772,7 @@ function pentate(self: AlyaNum, number: AlyaNum): AlyaNum
 		count += 1
 		if floored > 0 then
 			result = tetrate(self, result)
-			if check ~= nil and equals(check, result) then
+			if equals(check, result) then
 				floored = 0
 				break
 			end
@@ -786,7 +780,7 @@ function pentate(self: AlyaNum, number: AlyaNum): AlyaNum
 			floored -= 1
 		else
 			result = slog(result, self)
-			if check ~= nil and equals(check, result) then
+			if equals(check, result) then
 				floored = 0
 				break
 			end
@@ -811,10 +805,7 @@ function hexate(self: AlyaNum, number: AlyaNum): AlyaNum
 		end
 		return ONE
 
-	elseif equalsOne(self) then
-		return ONE
-
-	elseif number.sign == 0 then
+	elseif equalsOne(self) or number.sign == 0 then
 		return ONE
 
 	elseif equalsOne(number) then
@@ -841,8 +832,8 @@ function hexate(self: AlyaNum, number: AlyaNum): AlyaNum
 	end
 	local revertedHexate = toNumber(number)
 	local floored = math.floor(revertedHexate)
-	local result = pentate(self, AlyaNum.new(revertedHexate - floored))
-	local check: AlyaNum
+	local result = pow(self, AlyaNum.new(revertedHexate - floored))
+	local check = ZERO
 	local count = 0
 	for i = 1, 100 do
 		if not (floored ~= 0 and lessThan(result, MAX_ADD)) then
@@ -851,7 +842,7 @@ function hexate(self: AlyaNum, number: AlyaNum): AlyaNum
 		count += 1
 		if floored > 0 then
 			result = pentate(self, result)
-			if check ~= nil and equals(check, result) then
+			if equals(check, result) then
 				floored = 0
 				break
 			end
@@ -859,7 +850,7 @@ function hexate(self: AlyaNum, number: AlyaNum): AlyaNum
 			floored -= 1
 		else
 			result = pentlog(result, self)
-			if check ~= nil and equals(check, result) then
+			if equals(check, result) then
 				floored = 0
 				break
 			end
