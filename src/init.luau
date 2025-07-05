@@ -1,6 +1,11 @@
 --!optimize 2
 --!native
 
+--[ [
+AlyaNum: Library for performing mathematical operations on numbers exceeding 2^1024.
+Implements a number system with support for hyperoperations (tetration, pentation, etc.) and extremely large values.
+] ]
+
 local THRESHOLD = 16
 local DECIMAL_POINTS = 2
 local DEFAULT_ABBREVIATION: "suffix" | "scientific" = "suffix"
@@ -10,6 +15,10 @@ local FLOAT64_SAFE_LIMIT = math.pow(2, 53) - 1
 local LOG10_FLOAT64_SAFE_LIMIT = math.log10(FLOAT64_SAFE_LIMIT)
 local HUGE = math.huge
 
+--[ [
+Suffixes used for number formatting. See AlyaNum.changeSuffixes for customization.
+@see https://googology.fandom.com/wiki/Names_of_large_numbers
+] ]
 local suffixes = {
 	beginning = { "K", "M", "B" },
 	first = { "U", "D", "T", "Qd", "Qn", "Sx", "Sp", "Oc", "No" },
@@ -29,13 +38,21 @@ local suffixes = {
 }
 local DP_OFFSET = math.pow(10, DECIMAL_POINTS)
 
+--- The base version of an AlyaNum object, stripped of its metatables and metamethods.
+--- This type commonly appears when sending AlyaNum objects over the client-server boundary or saving it in datastores.
+--- @example
+--- {sign: -1, multiplicand: 4, exponent: 2, tetrate: 1, pentate: 0, hexate: 0, heptate: 0}
+--- This represents -1 * 10 ^^ (10 ^ (10 ^ 4)).
 export type BaseAlyaNum = { sign: number, multiplicand: number, exponent: number, tetrate: number, pentate: number, hexate: number, heptate: number }
+
+--- An object representing a number in this library. This could be a number primitive, BaseAlyaNum or AlyaNum.
 export type Number = BaseAlyaNum | number | AlyaNum
 
 --- @class AlyaNum
---- Number library that goes to 10^^^^^10.
+--- Library for performing mathematical operations on numbers exceeding 2^1024.
 local AlyaNum = {}
 AlyaNum.__index = AlyaNum
+
 
 function fix(number: BaseAlyaNum): AlyaNum
 	if number.sign == 0 then -- its just 0
@@ -113,6 +130,9 @@ function fix(number: BaseAlyaNum): AlyaNum
 	return setmetatable(number, AlyaNum)
 end
 
+--- Create a new AlyaNum object from a primitive number or BaseAlyaNum.
+--- @param number number | BaseAlyaNum
+--- @returns AlyaNum
 function AlyaNum.new(number: number | BaseAlyaNum): AlyaNum
 	if type(number) == "number" then
 		if number == HUGE then
@@ -153,6 +173,10 @@ local MAX_SCIENTIFIC = AlyaNum.new({sign = 1, multiplicand = 300008, exponent = 
 local MAX_E_CHAIN = AlyaNum.new({sign = 1, multiplicand = 10000000000, exponent = 8, tetrate = 1, pentate = 0, hexate = 0, heptate = 0})
 local MAX_ENT = AlyaNum.new({sign = 1, multiplicand = 306, exponent = 1, tetrate = 2, pentate = 0, hexate = 0, heptate = 0})
 
+--- Add two AlyaNum objects. Macro for AlyaNum + AlyaNum.
+--- @param self AlyaNum
+--- @param number AlyaNum
+--- @returns AlyaNum
 function add(self: AlyaNum, number: AlyaNum): AlyaNum
 	if self.sign == 0 then
 		return number
@@ -183,9 +207,7 @@ function add(self: AlyaNum, number: AlyaNum): AlyaNum
 	
 	local minSign, maxSign, minMult, maxMult = minAbsNum.sign, maxAbsNum.sign, minAbsNum.multiplicand, maxAbsNum.multiplicand
 
-	-- wow! good code!
-	-- yeah this was the simplest and most optimized way i could think of for handling negatives
-	
+	-- Handles negatives and addition logic
 	if maxSign == minSign then
 		
 		-- 10^(x+log(10^(y-x)+1)) = 10^x+10^y
@@ -202,6 +224,10 @@ function add(self: AlyaNum, number: AlyaNum): AlyaNum
 	return fix({sign = maxSign, multiplicand = adjMinMult + math.log10(math.pow(10, maxMult - adjMinMult) - 1), exponent = 1, tetrate = 0, pentate = 0, hexate = 0, heptate = 0})
 end
 
+--- Multiply two AlyaNum objects. Macro for AlyaNum * AlyaNum.
+--- @param self AlyaNum
+--- @param number AlyaNum
+--- @returns AlyaNum
 function mul(self: AlyaNum, number: AlyaNum): AlyaNum
 	if self.sign == 0 or number.sign == 0 then
 		return ZERO
@@ -227,6 +253,10 @@ function mul(self: AlyaNum, number: AlyaNum): AlyaNum
 	return result
 end
 
+--- Divide two AlyaNum objects. Macro for AlyaNum / AlyaNum.
+--- @param self AlyaNum
+--- @param number AlyaNum
+--- @returns AlyaNum
 function div(self: AlyaNum, number: AlyaNum): AlyaNum
 	if self.sign == 0 or number.sign == 0 then
 		return ZERO
@@ -252,6 +282,10 @@ function div(self: AlyaNum, number: AlyaNum): AlyaNum
 	return result
 end
 
+--- Raise a AlyaNum to the power of another AlyaNum. Macro for AlyaNum ^ AlyaNum.
+--- @param self AlyaNum
+--- @param number AlyaNum
+--- @returns AlyaNum
 function pow(self: AlyaNum, number: AlyaNum): AlyaNum
 	if number.sign == 0 or equalsOne(self) then
 		return ONE
@@ -267,7 +301,7 @@ function pow(self: AlyaNum, number: AlyaNum): AlyaNum
 			return pow(abs(self), number)
 		end
 		return mutableUnary(pow(abs(self), number))
-	elseif self.sign <= 0 then -- unfortunately this produces imaginary numbers that no one should ever care about on roblox
+	elseif self.sign <= 0 then -- produces imaginary numbers, not supported
 		return ZERO
 
 	elseif moreEquals(max(self, number), MAX_POW) then
@@ -307,6 +341,10 @@ function pow10(number: AlyaNum): AlyaNum
 	end
 end
 
+--- Returns the n-th root of the AlyaNum. Macro for AlyaNum ^ (1/AlyaNum).
+--- @param self AlyaNum
+--- @param number AlyaNum
+--- @returns AlyaNum
 function root(self: AlyaNum, number: AlyaNum): AlyaNum
 	if equalsOne(number) then
 		return self
@@ -330,6 +368,10 @@ function root(self: AlyaNum, number: AlyaNum): AlyaNum
 	return mutablePow10(div(log10(self), number)) -- 10^(log(x)/y) = x^(1/y)
 end
 
+--- Returns the remainder of AlyaNum divided by another. Macro for AlyaNum % AlyaNum.
+--- @param self AlyaNum
+--- @param number AlyaNum
+--- @returns AlyaNum
 function mod(self: AlyaNum, number: AlyaNum): AlyaNum
 	if self.sign == 0 then
 		return ZERO
@@ -347,11 +389,13 @@ function mutableLog10(self: AlyaNum): AlyaNum
 	if self.sign <= 0 then
 		return ZERO
 	end
+
 	if self.exponent == 0 then
 		self.multiplicand = math.log10(self.multiplicand)
 	else
 		self.exponent -= 1
 	end
+
 	return self
 end
 
@@ -378,6 +422,10 @@ function log10(self: AlyaNum): AlyaNum
 	}, AlyaNum)	
 end
 
+--- Get the logarithm of the AlyaNum object with the specified number base.
+--- @param self AlyaNum
+--- @param number Base of the logarithm (AlyaNum)
+--- @returns AlyaNum | nil
 function log(self: AlyaNum, number: AlyaNum): AlyaNum
 	if equals(number, TEN) then
 		return log10(self)
@@ -385,6 +433,9 @@ function log(self: AlyaNum, number: AlyaNum): AlyaNum
 	return div(log10(self), log10(number))
 end
 
+--- Rounds down the AlyaNum to the nearest integer.
+--- This operation is unsafe for numbers beyond 2^1024.
+--- @returns AlyaNum
 function floor(self: AlyaNum): AlyaNum
 	if (self.sign == -1 and lessThan(self, -MAX_SAFE)) or moreThan(self, MAX_SAFE) then
 		return self
@@ -392,6 +443,9 @@ function floor(self: AlyaNum): AlyaNum
 	return AlyaNum.new(math.floor(toNumber(self)))
 end
 
+--- Rounds the AlyaNum to the nearest integer.
+--- This operation is unsafe for numbers beyond 2^1024.
+--- @returns AlyaNum
 function round(self: AlyaNum): AlyaNum
 	if (self.sign == -1 and lessThan(self, -MAX_SAFE)) or moreThan(self, MAX_SAFE) then
 		return self
@@ -399,6 +453,9 @@ function round(self: AlyaNum): AlyaNum
 	return AlyaNum.new(math.floor(toNumber(self) + 0.5))
 end
 
+--- Rounds up the AlyaNum to the nearest integer.
+--- This operation is unsafe for numbers beyond 2^1024.
+--- @returns AlyaNum
 function ceil(self: AlyaNum): AlyaNum
 	if (self.sign == -1 and lessThan(self, -MAX_SAFE)) or moreThan(self, MAX_SAFE) then
 		return self
@@ -406,6 +463,9 @@ function ceil(self: AlyaNum): AlyaNum
 	return AlyaNum.new(math.ceil(toNumber(self)))
 end
 
+--- Returns if the AlyaNum is an integer.
+--- This operation is unsafe for numbers beyond 2^1024.
+--- @returns boolean
 function isInteger(self: AlyaNum): boolean
 	if (self.sign == -1 and lessThan(self, -MAX_SAFE)) or moreThan(self, MAX_SAFE) then
 		return true
@@ -413,6 +473,8 @@ function isInteger(self: AlyaNum): boolean
 	return math.fmod(toNumber(self), 1) == 1
 end
 
+--- Returns 1/AlyaNum.
+--- @returns AlyaNum
 function reciprocal(self: AlyaNum): AlyaNum
 	if (self.sign == -1 and lessThan(self, -MAX_ALLOWED)) or moreThan(self, MAX_ALLOWED) then
 		return ZERO
@@ -458,6 +520,10 @@ function Hlambertw(self: AlyaNum): AlyaNum
 	return w
 end
 
+--- Returns the value of the AlyaNum after going through the Lambert W function.
+--- This is a fairly expensive operation.
+--- @see https://en.wikipedia.org/wiki/Lambert_W_function
+--- @returns AlyaNum
 function lambertw(self: AlyaNum): AlyaNum
 	if lessEquals(self, E308) then
 		return AlyaNum.new(f_lambertw(toNumber(self)))
@@ -469,6 +535,11 @@ function lambertw(self: AlyaNum): AlyaNum
 	return Hlambertw(self)
 end
 
+--- Returns the super-logarithm of the AlyaNum with the specified base.
+--- @param self AlyaNum
+--- @param base Base of the logarithm (AlyaNum)
+--- @returns AlyaNum | nil
+--- @see https://en.wikipedia.org/wiki/Iterated_logarithm
 function slog(self: AlyaNum, base: Number): AlyaNum?
 	local self = {
 		sign = self.sign,
@@ -652,6 +723,13 @@ function hextlog(self: AlyaNum, base: Number): AlyaNum?
 	end
 end
 
+--- Returns x^^y, where ^^ = tetration, and tetration is repeated exponentiation.
+--- This is an expensive operation, performing generally ~8-80x worse than mul depending on different values and whether the height is an integer or not.
+--- Do try to minimize calls of this function.
+--- @param self AlyaNum
+--- @param number Height of the power tower. If the height is not an integer, lambertw is used to approximate the final result.
+--- @returns AlyaNum
+--- @see https://en.wikipedia.org/wiki/Tetration
 function tetrate(self: AlyaNum, number: AlyaNum): AlyaNum
 	if lessThan(number, NEG_TWO) or equals(number, NEG_ONE) then -- negative tetrational values dont really exist so just return 0
 		return ZERO
@@ -721,6 +799,13 @@ function tetrate(self: AlyaNum, number: AlyaNum): AlyaNum
 	return fix(result)
 end
 
+--- Returns x^^^y, where ^^^ = pentation, and pentation is repeated tetration.
+--- This is an expensive operation, performing generally ~8-80x worse than mul depending on different values and whether the height is an integer or not.
+--- Do try to minimize calls of this function.
+--- @param self AlyaNum
+--- @param number Height of the tetration tower. If the height is not an integer, lambertw is used to approximate the final result.
+--- @returns AlyaNum
+--- @see https://en.wikipedia.org/wiki/Pentation
 function pentate(self: AlyaNum, number: AlyaNum): AlyaNum
 	if lessThan(number, NEG_TWO) or equals(number, NEG_ONE) then
 		return ZERO
@@ -795,6 +880,13 @@ function pentate(self: AlyaNum, number: AlyaNum): AlyaNum
 	return fix(result)
 end
 
+--- Returns x^^^^y, where ^^^^ = hexation, and hexation is repeated pentation.
+--- This is an expensive operation, performing generally ~8-80x worse than mul depending on different values and whether the height is an integer or not.
+--- Do try to minimize calls of this function.
+--- @param self AlyaNum
+--- @param number Height of the pentation tower. If the height is not an integer, lambertw is used to approximate the final result.
+--- @returns AlyaNum
+--- @see https://en.wikipedia.org/wiki/Hexation
 function hexate(self: AlyaNum, number: AlyaNum): AlyaNum
 	if lessThan(number, NEG_TWO) or equals(number, NEG_ONE) then
 		return ZERO
@@ -865,6 +957,10 @@ function hexate(self: AlyaNum, number: AlyaNum): AlyaNum
 	return fix(result)
 end
 
+--- Compares two numbers.
+--- @param self AlyaNum
+--- @param number AlyaNum
+--- @returns 1 | -1 | 0
 function compare(self: AlyaNum, number: AlyaNum): number
 	if self.sign ~= number.sign then
 		return self.sign > number.sign and 1 or -1
@@ -1002,6 +1098,9 @@ function mutableUnary(self: AlyaNum): AlyaNum
 	return self
 end
 
+--- Flips the sign of the AlyaNum object. Equivalent to multiplying by -1.
+--- @param self AlyaNum
+--- @returns AlyaNum
 function unary(self: AlyaNum): AlyaNum
 	return setmetatable({
 		sign = -self.sign,
@@ -1019,6 +1118,9 @@ function mutableAbs(self: AlyaNum): AlyaNum
 	return self
 end
 
+--- Get the absolute value of the AlyaNum.
+--- @param self AlyaNum
+--- @returns AlyaNum
 function abs(self: AlyaNum): AlyaNum
 	return setmetatable({
 		sign = 1,
@@ -1054,6 +1156,10 @@ function AlyaNum.fromOmega(onum: unknown): AlyaNum
 	return fix(number)
 end
 
+--- Reverts the AlyaNum back to a primitive number.
+--- For numbers beyond 2^1024, this will return math.huge.
+--- @param self AlyaNum
+--- @returns number
 function toNumber(self: AlyaNum): number
 	if self.exponent >= 2 or (self.exponent == 1 and self.multiplicand > LOG10_FLOAT64_LIMIT) then
 		return HUGE * self.sign
@@ -1065,7 +1171,7 @@ function toSerika(self: AlyaNum): (number, number)
 	local mantissa: number;
 	local exponent: number;
 	if self.exponent == 0 then
-		mantissa = (self.multiplicand / math.pow(10, math.floor(math.log10(self.multiplicand)))) * self.sign
+        mantissa = (self.multiplicand / math.pow(10, math.floor(math.log10(self.multiplicand)))) * self.sign
 		exponent = math.floor(math.log10(self.multiplicand))
 	elseif self.exponent == 1 then
 		mantissa = math.pow(10, self.multiplicand - math.floor(self.multiplicand)) * self.sign
@@ -1186,7 +1292,11 @@ function serikaNumToScientific(mantissa: number, exponent: number): string
 	return tostring(math.floor(mantissa * DP_OFFSET) / DP_OFFSET) .. "e" .. (e == nil and tostring(math.floor(exponent * DP_OFFSET) / DP_OFFSET) or e)
 end
 
--- abbreviation and displaying
+--- Converts the AlyaNum into a string with a number and suffix.
+--- Use the AlyaNum.changeSuffixes method to edit the suffixes.
+--- If a suffix for the specified AlyaNum is not found, scientific notation is used.
+--- @param self AlyaNum
+--- @returns string
 function toSuffix(self: AlyaNum): string
 	if self.exponent > 1 then
 		return toScientific(self)
@@ -1195,6 +1305,9 @@ function toSuffix(self: AlyaNum): string
 	return serikaNumToSuffix(mantissa, exponent) or serikaNumToScientific(mantissa, exponent)
 end
 
+--- Converts the AlyaNum object into a string in scientific notation format.
+--- @param self AlyaNum
+--- @returns string
 function toScientific(self: AlyaNum): string
 	if self.sign == 0 then
 		return "0"
@@ -1206,6 +1319,11 @@ function toScientific(self: AlyaNum): string
 	return serikaNumToScientific(mantissa, exponent)
 end
 
+--- Converts the AlyaNum into a string in an E chain.
+--- An E chain is exactly what it says. 1e(1e1M) is formatted as ee1M.
+--- E chains place all Es at the start, and have a maximum chain of 10 Es.
+--- @param self AlyaNum
+--- @returns string
 function toEChain(self: AlyaNum): string
 	if self.tetrate > 0 or self.exponent > 10 then
 		return toEnt(self)
@@ -1213,6 +1331,11 @@ function toEChain(self: AlyaNum): string
 	return string.rep("e", self.exponent) .. tostring(math.floor(self.multiplicand * DP_OFFSET) / DP_OFFSET)
 end
 
+--- Converts the AlyaNum into a format E(y)x.
+--- y is the number of times to perform 10^x. For example, E(3)2 = 10^(10^(10^2))
+--- @see https://googology.fandom.com/wiki/Nihilustheabsolutists_E_function
+--- @param self AlyaNum
+--- @returns string
 function toEnt(self: AlyaNum): string
 	local multiplicand = self.multiplicand
 	if self.tetrate > 0 then
@@ -1228,6 +1351,11 @@ function toEnt(self: AlyaNum): string
 	return part .. numberToSuffix(self.multiplicand)
 end
 
+--- Converts the AlyaNum into Hyper-E notation, Ex#a#b#c#d#e.
+--- a is the number of times to perform 10^x, b is the number of times to perform 10^^x, c is the number of times to perform 10^^^x and so on.
+--- @see https://googology.fandom.com/wiki/Hyper-E_notation
+--- @param self AlyaNum
+--- @returns string
 function toHyperE(self: AlyaNum): string
 	if self.sign == -1 then
 		return "-" .. toHyperE(abs(self))
