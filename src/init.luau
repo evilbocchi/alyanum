@@ -1666,7 +1666,11 @@ end
 
 function AlyaNum.fromScientific(str: string): AlyaNum
 	local split = string.split(str, "e")
-	return mul(AlyaNum.new(tonumber(split[1])), mutablePow10(AlyaNum.new(tonumber(split[2]))))
+    local mantissa = AlyaNum.new(tonumber(split[1]))
+    if #split == 1 then
+        return mantissa
+    end
+	return mul(mantissa, mutablePow10(AlyaNum.new(tonumber(split[2]))))
 end
 
 function AlyaNum.changeSuffixes(newSuffixes: typeof(suffixes))
