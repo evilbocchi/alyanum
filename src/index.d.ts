@@ -38,30 +38,71 @@ type Suffixes = {
  * Library for performing mathematical operations on numbers exceeding 2^1024.
  */
 interface AlyaNum extends BaseAlyaNum {
-    /** macro for AlyaNum + AlyaNum */
+    /**
+     * Adds the specified number to this AlyaNum and returns the result as a new AlyaNum.
+     * @param number The number to add (can be AlyaNum, BaseAlyaNum, or primitive number).
+     */
     add(number: Number): AlyaNum;
-    /** macro for AlyaNum - AlyaNum */
+    /**
+     * Subtracts the specified number from this AlyaNum and returns the result as a new AlyaNum.
+     * @param number The number to subtract.
+     */
     sub(number: Number): AlyaNum;
-    /** macro for AlyaNum * AlyaNum */
+    /**
+     * Multiplies this AlyaNum by the specified number and returns the result as a new AlyaNum.
+     * @param number The number to multiply by.
+     */
     mul(number: Number): AlyaNum;
-    /** macro for AlyaNum / AlyaNum */
+    /**
+     * Divides this AlyaNum by the specified number and returns the result as a new AlyaNum.
+     * @param number The number to divide by.
+     */
     div(number: Number): AlyaNum;
-    /** macro for AlyaNum ^ AlyaNum */
+    /**
+     * Raises this AlyaNum to the power of the specified number and returns the result as a new AlyaNum.
+     * @param number The exponent value.
+     */
     pow(number: Number): AlyaNum;
-    /** macro for AlyaNum % AlyaNum */
+    /**
+     * Returns the remainder after dividing this AlyaNum by the specified number.
+     * @param number The divisor.
+     */
     mod(number: Number): AlyaNum;
-    /** macro for AlyaNum ^ (1/AlyaNum) */
+    /**
+     * Calculates the nth root of this AlyaNum, where n is the specified number.
+     * @param number The degree of the root.
+     */
     root(number: Number): AlyaNum;
 
-    /** macro for AlyaNum == AlyaNum */
+    /**
+     * Checks if this AlyaNum is exactly equal to the specified number.
+     * @param number The number to compare against.
+     * @returns True if the numbers are equal, false otherwise.
+     */
     equals(number: Number): boolean;
-    /** macro for AlyaNum < AlyaNum */
+    /**
+     * Checks if this AlyaNum is less than the specified number.
+     * @param number The number to compare against.
+     * @returns True if this AlyaNum is less, false otherwise.
+     */
     lessThan(number: Number): boolean;
-    /** macro for AlyaNum <= AlyaNum */
+    /**
+     * Checks if this AlyaNum is less than or equal to the specified number.
+     * @param number The number to compare against.
+     * @returns True if this AlyaNum is less than or equal, false otherwise.
+     */
     lessEquals(number: Number): boolean;
-    /** macro for AlyaNum > AlyaNum */
+    /**
+     * Checks if this AlyaNum is greater than the specified number.
+     * @param number The number to compare against.
+     * @returns True if this AlyaNum is greater, false otherwise.
+     */
     moreThan(number: Number): boolean;
-    /** macro for AlyaNum >= AlyaNum */
+    /**
+     * Checks if this AlyaNum is greater than or equal to the specified number.
+     * @param number The number to compare against.
+     * @returns True if this AlyaNum is greater than or equal, false otherwise.
+     */
     moreEquals(number: Number): boolean;
     /**
      * Compares two numbers.
