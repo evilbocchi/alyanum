@@ -15,8 +15,8 @@ jobs:
 
       - name: Download Luau CLI
         run: |
-          wget https://github.com/Roblox/luau/releases/latest/download/luau-linux.zip
-          unzip luau-linux.zip -d luau
+          wget https://github.com/Roblox/luau/releases/latest/download/luau-ubuntu.zip
+          unzip luau-ubuntu.zip -d luau
           chmod +x luau/luau
 
       - name: Run tests
