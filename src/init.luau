@@ -1,10 +1,10 @@
 --!optimize 2
 --!native
 
---[ [
+--[[
 AlyaNum: Library for performing mathematical operations on numbers exceeding 2^1024.
 Implements a number system with support for hyperoperations (tetration, pentation, etc.) and extremely large values.
-] ]
+]]
 
 local THRESHOLD = 16
 local DECIMAL_POINTS = 2
@@ -15,10 +15,8 @@ local FLOAT64_SAFE_LIMIT = math.pow(2, 53) - 1
 local LOG10_FLOAT64_SAFE_LIMIT = math.log10(FLOAT64_SAFE_LIMIT)
 local HUGE = math.huge
 
---[ [
-Suffixes used for number formatting. See AlyaNum.changeSuffixes for customization.
-@see https://googology.fandom.com/wiki/Names_of_large_numbers
-] ]
+--- Suffixes used for number formatting. See AlyaNum.changeSuffixes for customization.
+--- @see https://googology.fandom.com/wiki/Names_of_large_numbers
 local suffixes = {
 	beginning = { "K", "M", "B" },
 	first = { "U", "D", "T", "Qd", "Qn", "Sx", "Sp", "Oc", "No" },
@@ -1684,158 +1682,326 @@ function AlyaNum.changeDefaultAbbreviation(mode: "suffix" | "scientific")
 end
 
 -- exports
+
+--- Fix the AlyaNum object to ensure it is a valid AlyaNum.
+--- You shouldn't need to use this function.
 AlyaNum.fix = fix
+
+--- Adds the specified number to this AlyaNum and returns the result as a new AlyaNum.
+--- @param number The number to add (can be AlyaNum, BaseAlyaNum, or primitive number).
 AlyaNum.add = function(self: AlyaNum, number: Number)
 	return add(self, AlyaNum.new(number))
 end
+
+--- Subtracts the specified number from this AlyaNum and returns the result as a new AlyaNum.
+--- @param number The number to subtract.
 AlyaNum.sub = function(self: AlyaNum, number: Number)
 	return add(self, unary(AlyaNum.new(number)))
 end
+
+--- Multiplies this AlyaNum by the specified number and returns the result as a new AlyaNum.
+--- @param number The number to multiply by.
 AlyaNum.mul = function(self: AlyaNum, number: Number)
 	return mul(self, AlyaNum.new(number))
 end
+
+--- Divides this AlyaNum by the specified number and returns the result as a new AlyaNum.
+--- @param number The number to divide by.
 AlyaNum.div = function(self: AlyaNum, number: Number)
 	return div(self, AlyaNum.new(number))
 end
+
+--- Raises this AlyaNum to the power of the specified number and returns the result as a new AlyaNum.
+--- @param number The exponent value.
 AlyaNum.pow = function(self: AlyaNum, number: Number)
 	return pow(self, AlyaNum.new(number))
 end
+
+--- Returns the remainder after dividing this AlyaNum by the specified number.
+--- @param number The divisor.
 AlyaNum.mod = function(self: AlyaNum, number: Number)
 	return mod(self, AlyaNum.new(number))
 end
+
+--- Calculates the nth root of this AlyaNum, where n is the specified number.
+--- @param number The degree of the root.
 AlyaNum.root = function(self: AlyaNum, number: Number)
 	return root(self, AlyaNum.new(number))
 end
+
+--- Checks if this AlyaNum is exactly equal to the specified number.
+--- @param number The number to compare against.
 AlyaNum.equals = function(self: AlyaNum, number: Number)
 	return equals(self, AlyaNum.new(number))
 end
+
+--- Checks if this AlyaNum is less than the specified number.
+--- @param number The number to compare against.
 AlyaNum.lessThan = function(self: AlyaNum, number: Number)
 	return lessThan(self, AlyaNum.new(number))
 end
+
+--- Checks if this AlyaNum is less than or equal to the specified number.
+--- @param number The number to compare against.
 AlyaNum.lessEquals = function(self: AlyaNum, number: Number)
 	return lessEquals(self, AlyaNum.new(number))
 end
+
+--- Checks if this AlyaNum is greater than the specified number.
+--- @param number The number to compare against.
 AlyaNum.moreThan = function(self: AlyaNum, number: Number)
 	return moreThan(self, AlyaNum.new(number))
 end
+
+--- Checks if this AlyaNum is greater than or equal to the specified number.
+--- @param number The number to compare against.
 AlyaNum.moreEquals = function(self: AlyaNum, number: Number)
 	return moreEquals(self, AlyaNum.new(number))
 end
+
+--- Compares two numbers.
+--- @param number The number to compare against.
 AlyaNum.compare = function(self: AlyaNum, number: Number)
 	return compare(self, AlyaNum.new(number))
 end
+
+--- Get the absolute value of the AlyaNum.
 AlyaNum.abs = function(self: AlyaNum)
 	return abs(AlyaNum.new(self))
 end
+
+--- Get the logarithm of the AlyaNum object with a base of 10.
 AlyaNum.log10 = function(self: AlyaNum)
 	return log10(AlyaNum.new(self))
 end
+
+--- Get the logarithm of the AlyaNum object with the specified number base.
+--- @param number Base of the logarithm
 AlyaNum.log = function(self: AlyaNum, number: Number)
 	return log(self, AlyaNum.new(number))
 end
+
+--- Rounds down the AlyaNum to the nearest integer.
+--- This operation is unsafe for numbers beyond 2^1024.
 AlyaNum.floor = function(self: AlyaNum)
 	return floor(AlyaNum.new(self))
 end
+
+--- Rounds the AlyaNum to the nearest integer.
+--- This operation is unsafe for numbers beyond 2^1024.
 AlyaNum.round = function(self: AlyaNum)
 	return round(AlyaNum.new(self))
 end
+
+--- Rounds up the AlyaNum to the nearest integer.
+--- This operation is unsafe for numbers beyond 2^1024.
 AlyaNum.ceil = function(self: AlyaNum)
 	return ceil(AlyaNum.new(self))
 end
+
+--- Returns if the AlyaNum is an integer.
+--- This operation is unsafe for numbers beyond 2^1024.
 AlyaNum.isInteger = function(self: AlyaNum)
 	return isInteger(AlyaNum.new(self))
 end
+
+--- Returns 1/AlyaNum.
 AlyaNum.reciprocal = function(self: AlyaNum)
 	return reciprocal(AlyaNum.new(self))
 end
+
+--- Returns the value of the AlyaNum after going through the Lambert W function.
+--- This is a fairly expensive operation.
 AlyaNum.lambertw = function(self: AlyaNum)
 	return lambertw(AlyaNum.new(self))
 end
+
+--- Returns the super-logarithm of the AlyaNum with the specified base.
+--- @param number Base of the logarithm
 AlyaNum.slog = function(self: AlyaNum, number: Number)
 	return slog(self, AlyaNum.new(number))
 end
+
+--- Returns x^^^y, where ^^^ = pentation, and pentation is repeated tetration.
+--- @param number Height of the tetration tower.
 AlyaNum.pentlog = function(self: AlyaNum, number: Number)
 	return pentlog(self, AlyaNum.new(number))
 end
+
+--- Returns x^^^^y, where ^^^^ = hexation, and hexation is repeated pentation.
+--- @param number Height of the pentation tower.
 AlyaNum.hextlog = function(self: AlyaNum, number: Number)
 	return hextlog(self, AlyaNum.new(number))
 end
+
+--- Returns x^^y, where ^^ = tetration, and tetration is repeated exponentiation.
+--- @param number Height of the power tower.
 AlyaNum.tet = function(self: AlyaNum, number: Number)
 	return tetrate(self, AlyaNum.new(number))
 end
+
+--- Returns x^^^y, where ^^^ = pentation, and pentation is repeated tetration.
+--- @param number Height of the tetration tower.
 AlyaNum.pent = function(self: AlyaNum, number: Number)
 	return pentate(self, AlyaNum.new(number))
 end
+
+--- Returns x^^^^y, where ^^^^ = hexation, and hexation is repeated pentation.
+--- @param number Height of the pentation tower.
 AlyaNum.hext = function(self: AlyaNum, number: Number)
 	return hexate(self, AlyaNum.new(number))
 end
+
+--- Flips the sign of the AlyaNum object. Equivalent to multiplying by -1.
 AlyaNum.unary = function(self: AlyaNum)
 	return unary(AlyaNum.new(self))
 end
+
+--- Returns the minimum value of two AlyaNum objects.
+--- @param number The number to compare against.
 AlyaNum.min = function(self: AlyaNum, number: Number)
 	return min(self, AlyaNum.new(number))
 end
+
+--- Returns the maximum value of two AlyaNum objects.
+--- @param number The number to compare against.
 AlyaNum.max = function(self: AlyaNum, number: Number)
 	return max(self, AlyaNum.new(number))
 end
+
+--- Returns the minimum and maximum value of two AlyaNum objects.
+--- @param number The number to compare against.
 AlyaNum.minmax = function(self: AlyaNum, number: Number)
 	return minmax(self, AlyaNum.new(number))
 end
+
+--- Converts the AlyaNum object into a displayable string.
 AlyaNum.toString = function(self: Number)
 	return toString(AlyaNum.new(self))
 end
+
+--- Converts the AlyaNum into a string with a number and suffix.
 AlyaNum.toSerika = function(self: Number)
 	return toSerika(AlyaNum.new(self))
 end
+
+--- Reverts the AlyaNum back to a primitive number.
+--- For numbers beyond 2^1024, this will return math.huge.
 AlyaNum.toNumber = function(self: Number)
 	return toNumber(AlyaNum.new(self))
 end
+
+--- Converts the AlyaNum into a string with a number and suffix.
 AlyaNum.toSuffix = function(self: Number)
 	return toSuffix(AlyaNum.new(self))
 end
+
+--- Converts the AlyaNum object into a string in scientific notation format.
 AlyaNum.toScientific = function(self: Number)
 	return toScientific(AlyaNum.new(self))
 end
+
+--- Converts the AlyaNum into a string in an E chain.
 AlyaNum.toEChain = function(self: Number)
 	return toEChain(AlyaNum.new(self))
 end
+
+--- Converts the AlyaNum into a `format E(y)x`.
 AlyaNum.toEnt = function(self: Number)
 	return toEnt(AlyaNum.new(self))
 end
+
+--- Converts the AlyaNum into Hyper-E notation, `Ex#a#b#c#d#e`.
 AlyaNum.toHyperE = function(self: Number)
 	return toHyperE(AlyaNum.new(self))
 end
+
+--- Alias for AlyaNum.equals. Checks if two AlyaNum objects are equal.
 AlyaNum.eq = AlyaNum.equals
+
+--- Alias for AlyaNum.lessThan. Checks if this AlyaNum is less than another.
 AlyaNum.lt = AlyaNum.lessThan
+
+--- Alias for AlyaNum.lessEquals. Checks if this AlyaNum is less than or equal to another.
 AlyaNum.le = AlyaNum.lessEquals
+
+--- Alias for AlyaNum.moreThan. Checks if this AlyaNum is greater than another.
 AlyaNum.mt = AlyaNum.moreThan
+
+--- Alias for AlyaNum.moreEquals. Checks if this AlyaNum is greater than or equal to another.
 AlyaNum.me = AlyaNum.moreEquals
+
+--- Alias for AlyaNum.unary. Flips the sign of the AlyaNum object.
 AlyaNum.unm = AlyaNum.unary
+
+--- Alias for AlyaNum.reciprocal. Returns 1/AlyaNum.
 AlyaNum.recip = AlyaNum.reciprocal
+
+--- Alias for AlyaNum.toNumber. Reverts the AlyaNum back to a primitive number.
 AlyaNum.revert = toNumber
+
+--- Alias for AlyaNum.lbencode. Converts AlyaNum to a single primitive number for leaderboards.
 AlyaNum.toSingle = AlyaNum.lbencode
+
+--- Alias for AlyaNum.lbdecode. Converts a single primitive number back into AlyaNum.
 AlyaNum.fromSingle = AlyaNum.lbdecode
+
+--- Metamethod for addition.
 AlyaNum.__add = AlyaNum.add
+
+--- Metamethod for subtraction.
 AlyaNum.__sub = AlyaNum.sub
+
+--- Metamethod for multiplication.
 AlyaNum.__mul = AlyaNum.mul
+
+--- Metamethod for division.
 AlyaNum.__div = AlyaNum.div
+
+--- Metamethod for exponentiation.
 AlyaNum.__pow = AlyaNum.pow
+
+--- Metamethod for modulo.
 AlyaNum.__mod = AlyaNum.mod
+
+--- Metamethod for equality.
 AlyaNum.__eq = AlyaNum.eq
+
+--- Metamethod for less than.
 AlyaNum.__lt = AlyaNum.lt
+
+--- Metamethod for less than or equal.
 AlyaNum.__le = AlyaNum.le
+
+--- Metamethod for unary minus.
 AlyaNum.__unm = AlyaNum.unm
+
+--- Metamethod for converting AlyaNum to string.
 AlyaNum.__tostring = AlyaNum.toString
+
+--- Metamethod for concatenating AlyaNum with another value.
 AlyaNum.__concat = function(self: AlyaNum, value: any): AlyaNum
 	return AlyaNum.toString(self) .. value
 end
 
 -- fun little things
+
+--- A googol, 10^100.
 AlyaNum.GOOGOL = AlyaNum.new(10e100)
+
+--- A googolplex, 10^(10^100).
 AlyaNum.GOOGOLPLEX = AlyaNum.new(10):pow(AlyaNum.GOOGOL)
+
+--- A googolplexplex, 10^(10^(10^100)).
 AlyaNum.GOOGOLPLEXPLEX = AlyaNum.new(10):pow(AlyaNum.GOOGOLPLEX)
+
+--- Tritri, 3^^^3.
 AlyaNum.TRITRI = AlyaNum.new({sign = 1, multiplicand = 3638334640023.778, exponent = 7625597484984, tetrate = 0, pentate = 0, hexate = 0, heptate = 0})
+
+--- Tritet, 4^^^^4.
 AlyaNum.TRITET = AlyaNum.new({sign = 1, multiplicand = 153.906997547968, exponent = 2, tetrate = 2, pentate = 2, hexate = 0, heptate = 0})
+
+--- The first term of Graham's number, 3^^^^3.
 AlyaNum.GRAHAM1 = AlyaNum.new({sign = 1, multiplicand = 3638334640023.778, exponent = 7625597484984, tetrate = 0, pentate = 1, hexate = 0, heptate = 0})
 
 export type AlyaNum = typeof(setmetatable({} :: BaseAlyaNum, AlyaNum))
