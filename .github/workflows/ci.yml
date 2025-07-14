@@ -21,4 +21,4 @@ jobs:
 
       - name: Run tests
         run: |
-          ./luau/luau test/demo.luau
+          ./luau/luau runTests.luau
