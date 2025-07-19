@@ -5,7 +5,7 @@
   "main": "AlyaNum/init.lua",
   "scripts": {
     "build": "rbxtsc",
-    "test": "lune run test/tests.luau",
+    "test": "lune run testRunner.luau",
     "watch": "rbxtsc -w",
     "docs": "npx typedoc",
     "prepublish": "npm run build && npm run docs",

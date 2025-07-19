@@ -1,42 +1,85 @@
-local AlyaNum = require("./src/init.luau")
-local runner = require("./runner.luau")
+local fs = require("@lune/fs")
+local luau = require("@lune/luau")
 
-runner.addTest("fromNumber: creates from number", function()
+local bytecode = luau.compile(fs.readFile("src/init.luau"))
+local AlyaNum = luau.load(bytecode)()
+
+--- Test runner
+
+local tests = {}
+
+function addTest(name, fn)
+	table.insert(tests, { name = name, fn = fn })
+end
+
+function assertEqual(actual, expected, msg)
+	if actual ~= expected then
+		error(msg or ("Expected " .. tostring(expected) .. ", got " .. tostring(actual)), 2)
+	end
+end
+
+function assertClose(actual, expected, epsilon, msg)
+	epsilon = epsilon or 1e-9
+	if math.abs(actual - expected) >= epsilon then
+		error((msg or "") .. " Expected "..tostring(actual).." ≈ "..tostring(expected).." (epsilon="..tostring(epsilon)..")", 2)
+	end
+end
+
+function runTests()
+	local passed, failed = 0, 0
+	for _, test in ipairs(tests) do
+		local ok, err = pcall(test.fn)
+		if ok then
+			print("[PASS]", test.name)
+			passed += 1
+		else
+			print("[FAIL]", test.name, err)
+			failed += 1
+		end
+	end
+	print("Tests finished. Passed:", passed, "Failed:", failed)
+end
+
+
+
+--- Construction
+
+addTest("fromNumber: creates from number", function()
 	local num = AlyaNum.new(5)
-	runner.assertEqual(num:toNumber(), 5)
+	assertEqual(num:toNumber(), 5)
 end)
 
-runner.addTest("fromNumber: creates from negative number", function()
+addTest("fromNumber: creates from negative number", function()
 	local num = AlyaNum.new(-10)
-	runner.assertEqual(num:toNumber(), -10)
+	assertEqual(num:toNumber(), -10)
 end)
 
-runner.addTest("fromString: creates from string", function()
+addTest("fromString: creates from string", function()
 	local num = AlyaNum.fromString("12345")
-	runner.assertEqual(num:toNumber(), 12345)
+	assertEqual(num:toNumber(), 12345)
 end)
 
-runner.addTest("fromString: handles negative strings", function()
+addTest("fromString: handles negative strings", function()
 	local num = AlyaNum.fromString("-67890")
-	runner.assertEqual(num:toNumber(), -67890)
+	assertEqual(num:toNumber(), -67890)
 end)
 
-runner.addTest("fromString: handles zero string", function()
+addTest("fromString: handles zero string", function()
 	local num = AlyaNum.fromString("0")
-	runner.assertEqual(num:toNumber(), 0)
+	assertEqual(num:toNumber(), 0)
 end)
 
-runner.addTest("scientificNotation: parses scientific notation", function()
+addTest("scientificNotation: parses scientific notation", function()
 	local num = AlyaNum.fromScientific("1.23e5")
-	runner.assertClose(num:toNumber(), 123000)
+	assertClose(num:toNumber(), 123000)
 end)
 
-runner.addTest("scientificNotation: handles negative signs in strings", function()
+addTest("scientificNotation: handles negative signs in strings", function()
 	local num = AlyaNum.fromScientific("-5.678")
-	runner.assertClose(num:toNumber(), -5.678)
+	assertClose(num:toNumber(), -5.678)
 end)
 
-runner.addTest("scientificNotation: handles scientific notation in various formats", function()
+addTest("scientificNotation: handles scientific notation in various formats", function()
 	local cases = {
 		{ input = "1.23e+45", expected = 1.23e45 },
 		{ input = "1.23e-5", expected = 1.23e-5 },
@@ -44,8 +87,8 @@ runner.addTest("scientificNotation: handles scientific notation in various forma
 	}
 	for _, case in ipairs(cases) do
 		local num = AlyaNum.fromScientific(case.input)
-		runner.assertClose(num:toNumber() / case.expected, 1)
+		assertClose(num:toNumber() / case.expected, 1)
 	end
 end)
 
-runner.runTests()
+runTests()
