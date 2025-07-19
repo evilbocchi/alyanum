@@ -465,10 +465,10 @@ end
 --- This operation is unsafe for numbers beyond 2^1024.
 --- @returns boolean
 function isInteger(self: AlyaNum): boolean
-	if (self.sign == -1 and lessThan(self, -MAX_SAFE)) or moreThan(self, MAX_SAFE) then
-		return true
-	end
-	return math.fmod(toNumber(self), 1) == 1
+    if absMoreThan(self, MAX_SAFE) then
+        return true
+    end
+	return math.fmod(toNumber(self), 1) == 0
 end
 
 --- Returns 1/AlyaNum.
