@@ -7,14 +7,13 @@
 [![GitHub](https://img.shields.io/github/release/evilbocchi/alyanum.svg)](https://github.com/evilbocchi/alyanum/releases/latest)
 [![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/haPBmCSvXt?style=flat)](https://discord.gg/https://discord.gg/haPBmCSvXt)
 
-Alisa Mikhailovna "Alya" Kujou's go-to big number library for small and large-scale incremental games! 
 
-AlyaNum is a fork of [OmegaNum](https://create.roblox.com/store/asset/11646892509/OmegaNum-Readable) by FoundForces and [Naruyoko](https://github.com/Naruyoko),
-rewriting some of its unoptimized code to increase performance while what makes it special - its limit.
+**AlyaNum** is the ultimate big number library for Roblox incremental games, perfect for both small and large-scale projects!
 
-This number library goes up to 10^^^^^10, which to say the least, is pretty much impossible to reach by any Roblox game.
-Yet, it still performs faster than other number libraries such as [EternityNum](https://create.roblox.com/store/asset/12144172446/EternityNum-2) and
-[InfiniteMath](https://github.com/KdudeDev/InfiniteMath) while having a higher limit!
+This library is a high-performance fork of [OmegaNum](https://create.roblox.com/store/asset/11646892509/OmegaNum-Readable) by FoundForces and [Naruyoko](https://github.com/Naruyoko), completely rewritten for speed, clarity, and maintainability. AlyaNum stands out with its extraordinary limit: numbers up to 10^^^^^10 (heptation), a value so large it's virtually unreachable in any Roblox game.
 
-If you really, really care about performance and don't need such a high limit, consider checking out my other number library, 
-[SerikaNum](https://github.com/evilbocchi/serikanum). It has a smaller limit of 10^(2^1024) but generally outperforms it ~4-20x.
+Despite this massive range, AlyaNum is faster than other libraries like [EternityNum](https://create.roblox.com/store/asset/12144172446/EternityNum-2) and [InfiniteMath](https://github.com/KdudeDev/InfiniteMath), giving you both performance and power.
+
+If you want even more speed and don't need such a high limit, check out my other library, [SerikaNum](https://github.com/evilbocchi/serikanum), which offers a smaller cap of 10^(2^1024) but can outperform AlyaNum by 4–20x in most cases.
+
+For more information, refer to [the documentation](https://evilbocchi.github.io/alyanum/documents/Introduction.html).

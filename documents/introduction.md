@@ -4,47 +4,49 @@ title: Introduction
 
 # Introduction
 
-Have you ever wanted to have really, really, massively, humungously and hilariously large numbers in your Roblox game?
-Well, you probably already could, except at the cost of performance.
+Do you need to handle truly massive numbers in your Roblox game—without sacrificing performance?
 
-AlyaNum, a fork of [OmegaNum](https://create.roblox.com/store/asset/11646892509/OmegaNum-Readable) by FoundForces and [Naruyoko](https://github.com/Naruyoko),
-focuses on performance by rewriting OmegaNum's unoptimized code (this sounds stupid but the codebase was so unreadable no one would dare try doing it).
+**AlyaNum** is your solution! This library is a high-performance fork of [OmegaNum](https://create.roblox.com/store/asset/11646892509/OmegaNum-Readable) by FoundForces and [Naruyoko](https://github.com/Naruyoko),
+completely rewritten for speed and readability. No more struggling with slow, unoptimized, or hard-to-maintain code.
 
-Well, AlyaNum is here to tell you that you don't have to suffer anymore. No longer are the days when you have thoughts in your mind that "Maybe I should probably
-stop using such a slow piece of crap."
+AlyaNum supports numbers up to 10^^^^^10 (heptation!), a limit so high it's virtually unreachable in any Roblox game. Yet, it remains faster than other libraries like [EternityNum](https://create.roblox.com/store/asset/12144172446/EternityNum-2) and [InfiniteMath](https://github.com/KdudeDev/InfiniteMath).
 
-With a limit of 10^^^^^10, where ^^^^^ is heptation, go wild. Enjoy the library!
+Enjoy the freedom to work with gigantic numbers—without the headaches.
+
 
 ## Installation
-AlyaNum is pretty easy to install and use!
-To get started, download the library from any of the following options:
+Getting started with AlyaNum is simple! Choose your preferred method:
 
-1. [Roblox Toolbox](https://create.roblox.com/store/asset/18985449198/AlyaNum)
-2. [Wally](https://wally.run/package/evilbocchi/alyanum)
-3. [npm for roblox-ts](https://www.npmjs.com/package/@antivivi/alyanum)
+1. **Roblox Toolbox:** [AlyaNum on Roblox](https://create.roblox.com/store/asset/18985449198/AlyaNum)
+2. **Wally:** [evilbocchi/alyanum](https://wally.run/package/evilbocchi/alyanum)
+3. **npm (for roblox-ts):** [@antivivi/alyanum](https://www.npmjs.com/package/@antivivi/alyanum)
+
 
 ## Basic Usage
-Example in Lua:
+
+### Lua Example
 ```lua
 local AlyaNum = require(path.to.AlyaNum)
 
-local number = AlyaNum.new(5) -- make a new object representing 5
+local number = AlyaNum.new(5) -- Create a new AlyaNum representing 5
 print(number) -- 5
+
 local toAdd = AlyaNum.new(250)
-toAdd = toAdd:mul(2) -- You can choose to use the provided macro functions...
-number = number + toAdd -- Or simply use metamethods
+toAdd = toAdd:mul(2) -- Use macro functions...
+number = number + toAdd -- ...or Lua metamethods
 print(number) -- 505
 ```
 
-Example in TypeScript:
+### TypeScript Example
 ```ts
 import AlyaNum from "@antivivi/AlyaNum";
 
-let number = new AlyaNum(5); // make a new object representing 5
-print(number) // 5
+let number = new AlyaNum(5); // Create a new AlyaNum representing 5
+print(number); // 5
+
 let toAdd = new AlyaNum(250);
-toAdd = toAdd.mul(2); // You can only use macros due to TypeScript limitations
-number = number.add(toAdd)
-print(number) // 505
+toAdd = toAdd.mul(2); // Use macro functions (TypeScript does not support operator overloading)
+number = number.add(toAdd);
+print(number); // 505
 ```
 
