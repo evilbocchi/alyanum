@@ -13,12 +13,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download Luau CLI
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
         run: |
-          wget https://github.com/Roblox/luau/releases/latest/download/luau-ubuntu.zip
-          unzip luau-ubuntu.zip -d luau
-          chmod +x luau/luau
+          npm install
 
       - name: Run tests
         run: |
-          ./luau/luau test/tests.luau
+          npx lune run test/tests.luau

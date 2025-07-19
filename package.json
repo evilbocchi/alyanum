@@ -5,7 +5,7 @@
     "main": "AlyaNum/init.lua",
     "scripts": {
         "build": "rbxtsc",
-        "test": "lune run testRunner.luau",
+        "test": "npx lune run testRunner.luau",
         "watch": "rbxtsc -w",
         "docs": "npx typedoc",
         "prepublish": "npm run build && npm run docs",
@@ -37,8 +37,8 @@
         "@typescript-eslint/parser": "^7.18.0",
         "eslint": "^8.57.0",
         "eslint-plugin-roblox-ts": "^0.0.36",
+        "rbx-lune": "^1.0.0",
         "roblox-ts": "^2.3.0",
-        "rokit-npm": "^1.0.1",
         "typedoc": "^0.26.5",
         "typedoc-material-theme": "^1.1.0",
         "typedoc-plugin-extras": "^3.1.0",
