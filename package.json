@@ -1,48 +1,49 @@
 {
-  "name": "@antivivi/alyanum",
-  "version": "1.1.8",
-  "description": "Alisa Mikhailovna \"Alya\" Kujou's go-to big number library for small and large-scale incremental games!",
-  "main": "AlyaNum/init.lua",
-  "scripts": {
-    "build": "rbxtsc",
-    "test": "lune run testRunner.luau",
-    "watch": "rbxtsc -w",
-    "docs": "npx typedoc",
-    "prepublish": "npm run build && npm run docs",
-    "postpublish": "wally publish"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/evilbocchi/alyanum.git"
-  },
-  "keywords": [],
-  "author": "evilbocchi",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/evilbocchi/alyanum/issues"
-  },
-  "homepage": "https://github.com/evilbocchi/alyanum#readme",
-  "types": "AlyaNum/index.d.ts",
-  "files": [
-    "AlyaNum",
-    "!**/*.tsbuildinfo"
-  ],
-  "publishConfig": {
-    "access": "public"
-  },
-  "devDependencies": {
-    "@rbxts/compiler-types": "^2.3.0-types.1",
-    "@rbxts/types": "^1.0.791",
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
-    "eslint": "^8.57.0",
-    "eslint-plugin-roblox-ts": "^0.0.36",
-    "roblox-ts": "^2.3.0",
-    "typedoc": "^0.26.5",
-    "typedoc-material-theme": "^1.1.0",
-    "typedoc-plugin-extras": "^3.1.0",
-    "typedoc-plugin-missing-exports": "^3.0.0",
-    "typedoc-plugin-rename-defaults": "^0.7.1",
-    "typescript": "^5.5.4"
-  }
+    "name": "@antivivi/alyanum",
+    "version": "1.1.8",
+    "description": "Alisa Mikhailovna \"Alya\" Kujou's go-to big number library for small and large-scale incremental games!",
+    "main": "AlyaNum/init.lua",
+    "scripts": {
+        "build": "rbxtsc",
+        "test": "lune run testRunner.luau",
+        "watch": "rbxtsc -w",
+        "docs": "npx typedoc",
+        "prepublish": "npm run build && npm run docs",
+        "postpublish": "wally publish"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/evilbocchi/alyanum.git"
+    },
+    "keywords": [],
+    "author": "evilbocchi",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/evilbocchi/alyanum/issues"
+    },
+    "homepage": "https://github.com/evilbocchi/alyanum#readme",
+    "types": "AlyaNum/index.d.ts",
+    "files": [
+        "AlyaNum",
+        "!**/*.tsbuildinfo"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "devDependencies": {
+        "@rbxts/compiler-types": "^2.3.0-types.1",
+        "@rbxts/types": "^1.0.791",
+        "@typescript-eslint/eslint-plugin": "^7.18.0",
+        "@typescript-eslint/parser": "^7.18.0",
+        "eslint": "^8.57.0",
+        "eslint-plugin-roblox-ts": "^0.0.36",
+        "roblox-ts": "^2.3.0",
+        "rokit-npm": "^1.0.1",
+        "typedoc": "^0.26.5",
+        "typedoc-material-theme": "^1.1.0",
+        "typedoc-plugin-extras": "^3.1.0",
+        "typedoc-plugin-missing-exports": "^3.0.0",
+        "typedoc-plugin-rename-defaults": "^0.7.1",
+        "typescript": "^5.5.4"
+    }
 }
