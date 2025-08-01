@@ -6,13 +6,25 @@ AlyaNum: Library for performing mathematical operations on numbers exceeding 2^1
 Implements a number system with support for hyperoperations (tetration, pentation, etc.) and extremely large values.
 ]]
 
-local THRESHOLD = 16
+--- The number of decimal points to use when formatting numbers.
 local DECIMAL_POINTS = 2
+
+--- The default abbreviation style for large numbers.
 local DEFAULT_ABBREVIATION: "suffix" | "scientific" = "suffix"
+
+--- The biggest float64 number that can be represented. Equal to 1.797693015e308.
 local FLOAT64_LIMIT = 1.797693015e308
+
+--- The logarithm of the biggest float64 number that can be represented. Equal to 308.2547155. 
 local LOG10_FLOAT64_LIMIT = math.log10(FLOAT64_LIMIT)
+
+--- The biggest float64 number that can be safely represented without losing precision. Equal to 9.0071993e15.
 local FLOAT64_SAFE_LIMIT = math.pow(2, 53) - 1
+
+--- The logarithm of the biggest float64 number that can be safely represented without losing precision. Equal to 15.95458977.
 local LOG10_FLOAT64_SAFE_LIMIT = math.log10(FLOAT64_SAFE_LIMIT)
+
+--- Infinity. Equal to math.huge.
 local HUGE = math.huge
 
 --- Suffixes used for number formatting. See AlyaNum.changeSuffixes for customization.
@@ -203,7 +215,7 @@ function add(self: AlyaNum, number: AlyaNum): AlyaNum
 	end
 	
 	
-	local minSign, maxSign, minMult, maxMult = minAbsNum.sign, maxAbsNum.sign, minAbsNum.multiplicand, maxAbsNum.multiplicand
+	local minSign, maxSign, maxMult = minAbsNum.sign, maxAbsNum.sign, maxAbsNum.multiplicand
 
 	-- Handles negatives and addition logic
 	if maxSign == minSign then
@@ -1476,28 +1488,31 @@ function AlyaNum.fromString(str): AlyaNum
 		end
 		if #subs == 2 then
 			-- its scientific yk
-			local n = false
+			local sign = 1
 
-			local parsed = tonumber(subs[1])
-			if parsed == 0 then
+			local mantissa = tonumber(subs[1])
+			local exponent = tonumber(subs[2]) or 0
+			if mantissa == 0 then
 				return ZERO
 			end
-			if parsed ~= nil then
-				if subs[1]:find("-") then
-					parsed = math.abs(parsed)
-					n = true
+			if mantissa ~= nil then
+				if mantissa < 0 then
+					mantissa = math.abs(mantissa)
+					sign = -sign
 				end
-				local first = subs[2] + math.log10(parsed)
+				if exponent < 0 then -- we are making a small number
+			mantissa = mantissa * math.pow(10, exponent)
+			return fix({ sign = sign, multiplicand = mantissa, exponent = 0, tetrate = 0, pentate = 0, hexate = 0, heptate = 0 })
+				end
+				local first = exponent + math.log10(mantissa)
 				local second = 1
 				if first == 0 then
 					first = 1
 					second = 0
+				elseif first < 0 then
+				first = -first
+					sign = -sign
 				end
-				if n then 
-					first = -first
-				end
-				local sign = math.sign(first)
-				first = math.abs(first)
 				return fix({ sign = sign, multiplicand = first, exponent = second, tetrate = 0, pentate = 0, hexate = 0, heptate = 0 })
 			end
 		else
