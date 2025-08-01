@@ -6,7 +6,6 @@ AlyaNum: Library for performing mathematical operations on numbers exceeding 2^1
 Implements a number system with support for hyperoperations (tetration, pentation, etc.) and extremely large values.
 ]]
 
-local THRESHOLD = 16
 local DECIMAL_POINTS = 2
 local DEFAULT_ABBREVIATION: "suffix" | "scientific" = "suffix"
 local FLOAT64_LIMIT = 1.797693015e308
@@ -203,7 +202,7 @@ function add(self: AlyaNum, number: AlyaNum): AlyaNum
 	end
 	
 	
-	local minSign, maxSign, minMult, maxMult = minAbsNum.sign, maxAbsNum.sign, minAbsNum.multiplicand, maxAbsNum.multiplicand
+	local minSign, maxSign, maxMult = minAbsNum.sign, maxAbsNum.sign, maxAbsNum.multiplicand
 
 	-- Handles negatives and addition logic
 	if maxSign == minSign then
