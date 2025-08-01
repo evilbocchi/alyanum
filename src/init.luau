@@ -1488,28 +1488,31 @@ function AlyaNum.fromString(str): AlyaNum
 		end
 		if #subs == 2 then
 			-- its scientific yk
-			local n = false
+			local sign = 1
 
-			local parsed = tonumber(subs[1])
-			if parsed == 0 then
+			local mantissa = tonumber(subs[1])
+            local exponent = tonumber(subs[2]) or 0
+			if mantissa == 0 then
 				return ZERO
 			end
-			if parsed ~= nil then
-				if subs[1]:find("-") then
-					parsed = math.abs(parsed)
-					n = true
+			if mantissa ~= nil then
+				if mantissa < 0 then
+					mantissa = math.abs(mantissa)
+					sign = -sign
 				end
-				local first = subs[2] + math.log10(parsed)
+                if exponent < 0 then -- we are making a small number
+                    mantissa = mantissa * math.pow(10, exponent)
+                    return fix({ sign = sign, multiplicand = mantissa, exponent = 0, tetrate = 0, pentate = 0, hexate = 0, heptate = 0 })
+                end
+				local first = exponent + math.log10(mantissa)
 				local second = 1
 				if first == 0 then
 					first = 1
 					second = 0
-				end
-				if n then 
+                elseif first < 0 then
 					first = -first
+                    sign = -sign
 				end
-				local sign = math.sign(first)
-				first = math.abs(first)
 				return fix({ sign = sign, multiplicand = first, exponent = second, tetrate = 0, pentate = 0, hexate = 0, heptate = 0 })
 			end
 		else
