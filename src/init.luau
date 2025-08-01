@@ -1491,7 +1491,7 @@ function AlyaNum.fromString(str): AlyaNum
 			local sign = 1
 
 			local mantissa = tonumber(subs[1])
-            local exponent = tonumber(subs[2]) or 0
+			local exponent = tonumber(subs[2]) or 0
 			if mantissa == 0 then
 				return ZERO
 			end
