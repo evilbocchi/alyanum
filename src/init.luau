@@ -1501,7 +1501,7 @@ function AlyaNum.fromString(str): AlyaNum
 					sign = -sign
 				end
 				if exponent < 0 then -- we are making a small number
-                    mantissa = mantissa * math.pow(10, exponent)
+			mantissa = mantissa * math.pow(10, exponent)
                     return fix({ sign = sign, multiplicand = mantissa, exponent = 0, tetrate = 0, pentate = 0, hexate = 0, heptate = 0 })
                 end
 				local first = exponent + math.log10(mantissa)
