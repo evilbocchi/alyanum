@@ -28,31 +28,31 @@ end
 
 function assertEquals(actual, expected, msg)
 	if not actual:equals(expected) then
-		error((msg or "") .. " Expected " .. tostring(expected:toString()) .. ", got " .. tostring(actual:toString()), 2)
+		error((msg or "") .. " Expected " .. expected:toString() .. ", got " .. actual:toString(), 2)
 	end
 end
 
 function assertMoreThan(actual, expected, msg)
 	if not actual:moreThan(expected) then
-		error((msg or "") .. " Expected " .. tostring(actual:toString()) .. " > " .. tostring(expected:toString()), 2)
+		error((msg or "") .. " Expected " .. actual:toString() .. " > " .. expected:toString(), 2)
 	end
 end
 
 function assertLessThan(actual, expected, msg)
 	if not actual:lessThan(expected) then
-		error((msg or "") .. " Expected " .. tostring(actual:toString()) .. " < " .. tostring(expected:toString()), 2)
+		error((msg or "") .. " Expected " .. actual:toString() .. " < " .. expected:toString(), 2)
 	end
 end
 
 function assertMoreEquals(actual, expected, msg)
 	if not actual:moreEquals(expected) then
-		error((msg or "") .. " Expected " .. tostring(actual:toString()) .. " >= " .. tostring(expected:toString()), 2)
+		error((msg or "") .. " Expected " .. actual:toString() .. " >= " .. expected:toString(), 2)
 	end
 end
 
 function assertLessEquals(actual, expected, msg)
 	if not actual:lessEquals(expected) then
-		error((msg or "") .. " Expected " .. tostring(actual:toString()) .. " <= " .. tostring(expected:toString()), 2)
+		error((msg or "") .. " Expected " .. actual:toString() .. " <= " .. expected:toString(), 2)
 	end
 end
 
