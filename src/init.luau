@@ -1511,7 +1511,7 @@ function AlyaNum.fromString(str): AlyaNum
 					second = 0
 				elseif first < 0 then
 				first = -first
-                    sign = -sign
+					sign = -sign
 				end
 				return fix({ sign = sign, multiplicand = first, exponent = second, tetrate = 0, pentate = 0, hexate = 0, heptate = 0 })
 			end
