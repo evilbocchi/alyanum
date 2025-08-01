@@ -1509,7 +1509,7 @@ function AlyaNum.fromString(str): AlyaNum
 				if first == 0 then
 					first = 1
 					second = 0
-                elseif first < 0 then
+				elseif first < 0 then
 					first = -first
                     sign = -sign
 				end
