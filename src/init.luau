@@ -6,12 +6,25 @@ AlyaNum: Library for performing mathematical operations on numbers exceeding 2^1
 Implements a number system with support for hyperoperations (tetration, pentation, etc.) and extremely large values.
 ]]
 
+--- The number of decimal points to use when formatting numbers.
 local DECIMAL_POINTS = 2
+
+--- The default abbreviation style for large numbers.
 local DEFAULT_ABBREVIATION: "suffix" | "scientific" = "suffix"
+
+--- The biggest float64 number that can be represented. Equal to 1.797693015e308.
 local FLOAT64_LIMIT = 1.797693015e308
+
+--- The logarithm of the biggest float64 number that can be represented. Equal to 308.2547155. 
 local LOG10_FLOAT64_LIMIT = math.log10(FLOAT64_LIMIT)
+
+--- The biggest float64 number that can be safely represented without losing precision. Equal to 9.0071993e15.
 local FLOAT64_SAFE_LIMIT = math.pow(2, 53) - 1
+
+--- The logarithm of the biggest float64 number that can be safely represented without losing precision. Equal to 15.95458977.
 local LOG10_FLOAT64_SAFE_LIMIT = math.log10(FLOAT64_SAFE_LIMIT)
+
+--- Infinity. Equal to math.huge.
 local HUGE = math.huge
 
 --- Suffixes used for number formatting. See AlyaNum.changeSuffixes for customization.
