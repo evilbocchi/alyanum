@@ -1,12 +1,6 @@
-<p align="center">
-  <img width="350" alt="AlyaNum logo" src="assets/logo.png"></img>
-</p>
-
 # AlyaNum
 [![Build](https://github.com/evilbocchi/alyanum/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/evilbocchi/alyanum/actions/workflows/ci.yml)
 [![GitHub](https://img.shields.io/github/release/evilbocchi/alyanum.svg)](https://github.com/evilbocchi/alyanum/releases/latest)
-[![Discord](https://dcbadge.limes.pink/api/server/https://discord.gg/haPBmCSvXt?style=flat)](https://discord.gg/https://discord.gg/haPBmCSvXt)
-
 
 **AlyaNum** is the ultimate big number library for Roblox incremental games, perfect for both small and large-scale projects!
 
