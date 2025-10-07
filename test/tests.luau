@@ -1,3 +1,4 @@
+--!nocheck
 local fs = require("@lune/fs")
 local luau = require("@lune/luau")
 local process = require("@lune/process")

@@ -1,0 +1,2 @@
+--!nocheck
+require("./test/tests")()
