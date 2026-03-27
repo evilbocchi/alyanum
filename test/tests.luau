@@ -621,4 +621,18 @@ addTest("edge: min/max operations", function()
 	assertEquals(max_val, b, "minmax should return max second")
 end)
 
+addTest("edge: lbencode/lbdecode precision", function()
+	local a = AlyaNum.new(1)
+	assertEquals(AlyaNum.lbdecode(a:lbencode()), a, "lbencode/decode should preserve value at this scale")
+
+    local b = AlyaNum.new(5.24)
+    assertEquals(AlyaNum.lbdecode(b:lbencode()), b, "lbencode/decode should preserve value for small decimals")
+
+    local c = AlyaNum.new(0)
+    assertEquals(AlyaNum.lbdecode(c:lbencode()), c, "lbencode/decode should preserve zero")
+
+    local d = AlyaNum.new(-20)
+    assertEquals(AlyaNum.lbdecode(d:lbencode()), d, "lbencode/decode should preserve negative numbers")
+end)
+
 runTests()

@@ -1600,7 +1600,7 @@ function AlyaNum.lbencode(self: AlyaNum): number
 			-- mode 1: Native BigNum
 			-- mode 2: Native Post-BigNum
 			-- mode 3: Native EternityNum
-			return sign * (math.floor(math.log10((self.multiplicand + 1)) * 6.26775e14) + self.exponent * 1e16)
+			return sign * ((math.log10((self.multiplicand + 1)) * 6.26775e14) + self.exponent * 1e16)
 		end
 		-- mode 5: Native Extreme EternityNum Numbers
 		local cnum = 5e16
@@ -1608,7 +1608,7 @@ function AlyaNum.lbencode(self: AlyaNum): number
 		return sign * cnum
 	elseif self.multiplicand > 0 then
 		-- mode 0: Native Float
-		return sign * math.floor(math.log10((self.multiplicand + 1)) * 6.26775e14)
+		return sign * (math.log10((self.multiplicand + 1)) * 6.26775e14)
 	end
 end
 
