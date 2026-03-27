@@ -1,24 +1,24 @@
-/** 
+/**
  * The base version of an AlyaNum object, stripped of its metatables and metamethods.
  * This type commonly appears when sending AlyaNum objects over the client-server boundary or saving it in datastores.
- * 
+ *
  * @example
  * {sign: -1, multiplicand: 4, exponent: 2, tetrate: 1, pentate: 0, hexate: 0, heptate: 0}
  * // This represents -1 * 10 ^^ (10 ^ (10 ^ 4)).
  */
 interface BaseAlyaNum {
     /** This number primitive represents whether the number is positive, negative or zero. */
-    sign: 1 | -1 | 0,
+    sign: 1 | -1 | 0;
     /** This number primitive represents the significant digits of the entire number. */
-    multiplicand: number,
+    multiplicand: number;
     /** This number primitive represents how many times to perform `10^multiplicand`. e.g. `exponent = 2` would yield in `10^(10^multiplicand)`. */
-    exponent: number,
+    exponent: number;
     /** This number primitive represents how many times to perform `10^^multiplicand`. e.g. `tetrate = 3` would yield in `10^^(10^^(10^^(multiplicand)))`. */
-    tetrate: number,
+    tetrate: number;
     /** This number primitive represents how many times to perform `10^^^multiplicand`. e.g. `pentate = 2` would yield in `10^^^(10^^^multiplicand))`. */
-    pentate: number,
+    pentate: number;
     /** This number primitive represents how many times to perform `10^^^^multiplicand`. e.g. `hexate = 2` would yield in `10^^^^(10^^^^multiplicand))`. */
-    hexate: number,
+    hexate: number;
     /** This number primitive represents how many times to perform `10^^^^^multiplicand`. e.g. `heptate = 2` would yield in `10^^^^^(10^^^^^multiplicand))`. */
     heptate: number;
 }
@@ -27,10 +27,10 @@ interface BaseAlyaNum {
 type Number = BaseAlyaNum | number;
 
 type Suffixes = {
-    beginning: string[],
-    first: string[],
-    second: string[],
-    third: string[],
+    beginning: string[];
+    first: string[];
+    second: string[];
+    third: string[];
     mult: string[];
 };
 
@@ -106,8 +106,8 @@ interface AlyaNum extends BaseAlyaNum {
     moreEquals(number: Number): boolean;
     /**
      * Compares two numbers.
-     * 
-     * @param number 
+     *
+     * @param number
      */
     compare(number: Number): 1 | -1 | 0;
 
@@ -138,13 +138,13 @@ interface AlyaNum extends BaseAlyaNum {
     /**
      * Returns the value of the AlyaNum after going through the Lambert W function.
      * This is a fairly expensive operation.
-     * 
+     *
      * @see https://en.wikipedia.org/wiki/Lambert_W_function
      */
     lambertw(): AlyaNum;
     /**
      * Returns the super-logarithm of the AlyaNum with the specified base.
-     * 
+     *
      * @param number Base of the logarithm
      * @see https://en.wikipedia.org/wiki/Iterated_logarithm
      */
@@ -154,35 +154,34 @@ interface AlyaNum extends BaseAlyaNum {
      * This is an expensive operation, performing generally ~8-80x worse than {@link mul}
      * depending on different values and whether the height is an integer or not.
      * Do try to minimize calls of this function.
-     * 
+     *
      * @param number Height of the power tower. If the height is not an integer, {@link lambertw}
      * is used to approximate the final result.
      * @see https://en.wikipedia.org/wiki/Tetration
      */
     tet(number: Number): AlyaNum;
     /**
-    * Returns x^^^y, where ^^^ = pentation, and pentation is repeated tetration.
-    * This is an expensive operation, performing generally ~8-80x worse than {@link mul}
-    * depending on different values and whether the height is an integer or not.
-    * Do try to minimize calls of this function.
-    * 
-    * @param number Height of the tetration tower. If the height is not an integer, {@link lambertw}
-    * is used to approximate the final result.
-    * @see https://en.wikipedia.org/wiki/Pentation
-    */
+     * Returns x^^^y, where ^^^ = pentation, and pentation is repeated tetration.
+     * This is an expensive operation, performing generally ~8-80x worse than {@link mul}
+     * depending on different values and whether the height is an integer or not.
+     * Do try to minimize calls of this function.
+     *
+     * @param number Height of the tetration tower. If the height is not an integer, {@link lambertw}
+     * is used to approximate the final result.
+     * @see https://en.wikipedia.org/wiki/Pentation
+     */
     pent(number: Number): AlyaNum;
     /**
      * Returns x^^^^y, where ^^^^ = hexation, and hexation is repeated pentation.
      * This is an expensive operation, performing generally ~8-80x worse than {@link mul}
      * depending on different values and whether the height is an integer or not.
      * Do try to minimize calls of this function.
-     * 
+     *
      * @param number Height of the pentation tower. If the height is not an integer, {@link lambertw}
      * is used to approximate the final result.
      * @see https://en.wikipedia.org/wiki/Hexation
      */
     hext(number: Number): AlyaNum;
-
 
     /**
      * Get the absolute value of the AlyaNum.
@@ -208,7 +207,7 @@ interface AlyaNum extends BaseAlyaNum {
 
     /**
      * Get the logarithm of the AlyaNum object with the specified number base.
-     * 
+     *
      * @param number Base of the logarithm
      */
     log(number: Number): AlyaNum | undefined;
@@ -218,7 +217,7 @@ interface AlyaNum extends BaseAlyaNum {
     log10(): AlyaNum | undefined;
     /**
      * Converts the AlyaNum object into a displayable string.
-     * 
+     *
      * @returns Resulting string
      */
     toString(): string;
@@ -226,13 +225,13 @@ interface AlyaNum extends BaseAlyaNum {
      * Converts the AlyaNum into a string with a number and suffix.
      * Use the {@link AlyaNum.changeSuffixes} method to edit the suffixes.
      * If a suffix for the specified AlyaNum is not found, scientific notation is used.
-     * 
+     *
      * @returns Resulting string
      */
     toSuffix(): string;
     /**
      * Converts the AlyaNum into a string in scientific notation format.
-     * 
+     *
      * @returns Resulting string
      */
     toScientific(): string;
@@ -240,7 +239,7 @@ interface AlyaNum extends BaseAlyaNum {
      * Converts the AlyaNum into a string in an E chain.
      * An E chain is exactly what it says. `1e(1e1M)` is formatted as `ee1M.`
      * E chains place all Es at the start, and have a maximum chain of 10 Es.
-     * 
+     *
      * @returns Resulting string
      */
     toEChain(): string;
@@ -248,7 +247,7 @@ interface AlyaNum extends BaseAlyaNum {
      * Converts the AlyaNum into a `format E(y)x`.
      * y is the number of times to perform 10^x.
      * For example, `E(3)2 = 10^(10^(10^2))`
-     * 
+     *
      * @see https://googology.fandom.com/wiki/Nihilustheabsolutists_E_function
      * @returns Resulting string
      */
@@ -257,7 +256,7 @@ interface AlyaNum extends BaseAlyaNum {
      * Converts the AlyaNum into Hyper-E notation, `Ex#a#b#c#d#e`.
      * a is the number of times to perform 10^x, b is the number of times to perform 10^^x, c is the number
      * of times to perform 10^^^x and so on.
-     * 
+     *
      * @see https://googology.fandom.com/wiki/Hyper-E_notation
      * @returns Resulting string
      */
@@ -295,21 +294,21 @@ interface AlyaNumConstructor {
      * Create a new AlyaNum object from a primitive number.
      * @param val Primitive number or a table containing mantissa and exponent entries
      */
-    new(val: Number): AlyaNum;
+    new (val: Number): AlyaNum;
 
     /**
      * Create a new AlyaNum object from a BaseOnoeNum. This function is mainly
      * reserved for migration of number libraries. (OnoeNum -> AlyaNum)
-     * 
+     *
      * @param onoeNum Object to migrate from. Will automatically detect when the object is already migrated
      * @returns Resulting AlyaNum object
      */
-    fromOnoe: (onoeNum: { mantissa: number, exponent: number; }) => AlyaNum;
+    fromOnoe: (onoeNum: { mantissa: number; exponent: number }) => AlyaNum;
 
     /**
      * Create a new AlyaNum object from an OmegaNum. This function is mainly
      * reserved for migration of number libraries. (OnoeNum -> OmegaNum)
-     * 
+     *
      * @param onum Object to migrate from. Will automatically detect when the object is already migrated
      * @returns Resulting AlyaNum object
      */
@@ -318,23 +317,22 @@ interface AlyaNumConstructor {
     /**
      * Converts a formatted string into an AlyaNum.
      * Does not handle tier 2 suffixes i.e. suffixes above `Noce`.
-     * 
+     *
      * @example
      * fromString("2852852858") // Result: AlyaNum 2.85B
      * fromString("5e511") // Result: AlyaNum 50NoSxgCe
      * fromString("eeee5") // Result: AlyaNum eee100000
      * fromString("26UDe") // Result: AlyaNum 26UDe
-     * 
+     *
      * @param str String to parse
      * @returns Resulting AlyaNum
      */
     fromString: (str: string) => AlyaNum;
 
-
     /**
      * Rounds down the AlyaNum to the nearest integer.
      * This operation is unsafe for numbers beyond 2^1024.
-     * 
+     *
      * @param number Number to round down
      * @returns AlyaNum rounded down to the nearest integer
      */
@@ -342,7 +340,7 @@ interface AlyaNumConstructor {
     /**
      * Rounds the AlyaNum to the nearest integer.
      * This operation is unsafe for numbers beyond 2^1024.
-     * 
+     *
      * @param number Number to round
      * @returns AlyaNum rounded to the nearest integer
      */
@@ -350,14 +348,14 @@ interface AlyaNumConstructor {
     /**
      * Rounds up the AlyaNum to the nearest integer.
      * This operation is unsafe for numbers beyond 2^1024.
-     * 
+     *
      * @param number Number to round up
      * @returns AlyaNum rounded up to the nearest integer
      */
     ceil: (number: Number) => AlyaNum;
     /**
      * Get the absolute value of the AlyaNum.
-     * 
+     *
      * @param number AlyaNum object
      * @returns Absolute value of the AlyaNum object
      */
@@ -365,7 +363,7 @@ interface AlyaNumConstructor {
     /**
      * Flips the sign of the AlyaNum object.
      * Equivalent to multiplying by -1.
-     * 
+     *
      * @param number AlyaNum object
      * @returns Negative of the AlyaNum object
      */
@@ -373,14 +371,14 @@ interface AlyaNumConstructor {
     /**
      * Reverts the AlyaNum back to a primitive number.
      * For numbers beyond 2^1024, this will return `math.huge`.
-     * 
+     *
      * @param number AlyaNum object
      * @returns Reverted primitive number
      */
     revert: (number: BaseAlyaNum) => number;
     /**
      * Get the logarithm of the AlyaNum object with the specified primitive number base.
-     * 
+     *
      * @param number AlyaNum object
      * @param base Base of the logarithm as a primitive number
      * @returns Resulting AlyaNum object. Note that if the specified number is negative, this will return nil.
@@ -388,14 +386,14 @@ interface AlyaNumConstructor {
     log: (number: Number, base: number) => AlyaNum | undefined;
     /**
      * Get the logarithm of the AlyaNum object with a base of 10.
-     * 
+     *
      * @param number AlyaNum object
      * @returns Resulting AlyaNum object
      */
     log10: (number: Number) => AlyaNum | undefined;
     /**
      * Converts the AlyaNum object into a displayable string.
-     * 
+     *
      * @param number AlyaNum object
      * @returns Resulting string
      */
@@ -404,14 +402,14 @@ interface AlyaNumConstructor {
      * Converts the AlyaNum into a string with a number and suffix.
      * Use the {@link changeSuffixes} method to edit the suffixes.
      * If a suffix for the specified AlyaNum is not found, scientific notation is used.
-     * 
+     *
      * @param number AlyaNum object
      * @returns Resulting string
      */
     toSuffix: (number: Number) => string;
     /**
      * Converts the AlyaNum object into a string in scientific notation format.
-     * 
+     *
      * @param number AlyaNum object
      * @returns Resulting string
      */
@@ -420,7 +418,7 @@ interface AlyaNumConstructor {
      * Converts the AlyaNum into a string in an E chain.
      * An E chain is exactly what it says. `1e(1e1M)` is formatted as `ee1M.`
      * E chains place all Es at the start, and have a maximum chain of 10 Es.
-     * 
+     *
      * @param number AlyaNum object
      * @returns Resulting string
      */
@@ -429,7 +427,7 @@ interface AlyaNumConstructor {
      * Converts the AlyaNum into a `format E(y)x`.
      * y is the number of times to perform 10^x.
      * For example, `E(3)2 = 10^(10^(10^2))`
-     * 
+     *
      * @see https://googology.fandom.com/wiki/Nihilustheabsolutists_E_function
      * @param number AlyaNum object
      * @returns Resulting string
@@ -439,7 +437,7 @@ interface AlyaNumConstructor {
      * Converts the AlyaNum into Hyper-E notation, `Ex#a#b#c#d#e`.
      * a is the number of times to perform 10^x, b is the number of times to perform 10^^x, c is the number
      * of times to perform 10^^^x and so on.
-     * 
+     *
      * @see https://googology.fandom.com/wiki/Hyper-E_notation
      * @param number AlyaNum object
      * @returns Resulting string
@@ -450,7 +448,7 @@ interface AlyaNumConstructor {
      * Converts the AlyaNum object into a single primitive number that represents the magnitude of the number.
      * This method should only be used for leaderboards and other things that do not require the
      * specific number itself as the resulting single numbers are highly imprecise.
-     * 
+     *
      * @param number AlyaNum object
      * @returns Resulting single number
      */
@@ -460,7 +458,7 @@ interface AlyaNumConstructor {
      * This AlyaNum object is usually much more imprecise than it previous was before conversion into
      * a single primitive number.
      * Use this method to display numbers stored in leaderboard datastores.
-     * 
+     *
      * @param single Single primitive number
      * @returns Resulting AlyaNum object
      */
@@ -468,23 +466,22 @@ interface AlyaNumConstructor {
 
     /**
      * Returns the maximum value of two AlyaNum objects.
-     * 
+     *
      * @returns Largest AlyaNum object
      */
     max: (number1: AlyaNum, number2: Number) => AlyaNum;
     /**
      * Returns the minimum value of two AlyaNum objects.
-     * 
+     *
      * @returns Smallest AlyaNum object
      */
     min: (number1: AlyaNum, number2: Number) => AlyaNum;
     /**
      * Returns the minimum and maximum value of two AlyaNum objects.
-     * 
+     *
      * @returns Smallest and largest AlyaNum object respectively
      */
     minmax: (number1: AlyaNum, number2: Number) => LuaTuple<[AlyaNum, AlyaNum]>;
-
 
     /**
      * Converts strings formatted as *raw* scientific notation into an AlyaNum.
@@ -494,7 +491,7 @@ interface AlyaNumConstructor {
      * @example
      * const number1 = AlyaNum.fromScientific("2.4e5200") // 2.4e5.2K
      * const number2 = new AlyaNum(2.4).mul(new AlyaNum(10).pow(5200)) // 2.4e5.2K
-     * 
+     *
      * @param str Scientific notated string to convert into AlyaNum
      * @returns Resulting AlyaNum
      */
@@ -502,8 +499,8 @@ interface AlyaNumConstructor {
 
     /**
      * Change the suffixes to be shown when using the method {@link toSuffix}.
-     * 
-     * @example 
+     *
+     * @example
      * changeSuffixes({
      *      beginning: ["K", "M", "B"],
      *      first: ["U", "D", "T", "Qd", "Qn", "Sx", "Sp", "Oc", "No"],
@@ -511,20 +508,20 @@ interface AlyaNumConstructor {
      *      third: ["Ce", "Dce", "Tce", "Qdce", "Qnce", "Sxce", "Spce", "Occe", "Noce"],
      *      mult: ["Mi", "Mc", "Na", "Pi", "Fm", "At", "Zp", "Yc", "Xo", "Ve", "Me"]
      * })
-     * @param suffixes Suffix dictionary. 
+     * @param suffixes Suffix dictionary.
      */
     changeSuffixes: (suffixes: Suffixes) => void;
 
     /**
-    * Change the number of decimal points when formatting AlyaNum into a string.
-    * @param decimalPoints Decimal points to display in strings
-    */
+     * Change the number of decimal points when formatting AlyaNum into a string.
+     * @param decimalPoints Decimal points to display in strings
+     */
     changeDecimalPoints: (decimalPoints: number) => void;
 
     /**
-    * Change the default abbreviation mode used in {@link toString}. 
-    * @param mode Abbreviation method to use
-    */
+     * Change the default abbreviation mode used in {@link toString}.
+     * @param mode Abbreviation method to use
+     */
     changeDefaultAbbreviation: (mode: "suffix" | "scientific") => void;
 }
 

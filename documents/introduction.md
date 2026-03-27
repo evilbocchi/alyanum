@@ -13,18 +13,18 @@ AlyaNum supports numbers up to 10^^^^^10 (heptation!), a limit so high it's virt
 
 Enjoy the freedom to work with gigantic numbers—without the headaches.
 
-
 ## Installation
+
 Getting started with AlyaNum is simple! Choose your preferred method:
 
 1. **Roblox Toolbox:** [AlyaNum on Roblox](https://create.roblox.com/store/asset/18985449198/AlyaNum)
 2. **Wally:** [evilbocchi/alyanum](https://wally.run/package/evilbocchi/alyanum)
 3. **npm (for roblox-ts):** [@antivivi/alyanum](https://www.npmjs.com/package/@antivivi/alyanum)
 
-
 ## Basic Usage
 
 ### Lua Example
+
 ```lua
 local AlyaNum = require(path.to.AlyaNum)
 
@@ -38,6 +38,7 @@ print(number) -- 505
 ```
 
 ### TypeScript Example
+
 ```ts
 import AlyaNum from "@antivivi/AlyaNum";
 
@@ -49,4 +50,3 @@ toAdd = toAdd.mul(2); // Use macro functions (TypeScript does not support operat
 number = number.add(toAdd);
 print(number); // 505
 ```
-
