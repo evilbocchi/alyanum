@@ -4,12 +4,12 @@
     "description": "Alisa Mikhailovna \"Alya\" Kujou's go-to big number library for small and large-scale incremental games!",
     "main": "AlyaNum/init.lua",
     "scripts": {
-        "build": "rbxtsc",
-        "test": "npx lune run test",
+        "build": "rbxtsc && lune run release.luau",
+        "test": "lune run test",
         "watch": "rbxtsc -w",
-        "docs": "npx typedoc",
+        "docs": "typedoc",
         "prepublishOnly": "npm run build && npm run docs",
-        "postpublish": "wally publish"
+        "postpublish": "rk wally publish"
     },
     "repository": {
         "type": "git",
@@ -40,7 +40,7 @@
         "@typescript-eslint/parser": "^8.57.2",
         "eslint": "^10.1.0",
         "eslint-plugin-roblox-ts": "^1.4.0",
-        "rbx-lune": "^1.0.0",
+        "rkkit": "^0.0.0",
         "roblox-ts": "^3.0.0",
         "typedoc": "^0.28.18",
         "typedoc-material-theme": "^1.4.1",

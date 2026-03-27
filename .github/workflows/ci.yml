@@ -2,10 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
-    tags: [ 'v*' ]
+    branches: [main]
+    tags: ["v*"]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   test:
@@ -17,7 +17,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install dependencies
         run: |
@@ -25,7 +25,7 @@ jobs:
 
       - name: Run tests
         run: |
-          npx lune run test/tests.luau
+          npm run test
   release:
     needs: test
     if: startsWith(github.ref, 'refs/tags/v')
@@ -39,15 +39,15 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install dependencies
         run: |
           npm install
 
-      - name: Package src into rbxm
+      - name: Build project
         run: |
-          npx lune run release.luau
+          npm run build
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
