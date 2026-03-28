@@ -5,7 +5,7 @@
     "main": "AlyaNum/init.lua",
     "scripts": {
         "build": "rbxtsc && lune run release.luau",
-        "format": "prettier --write .",
+        "format": "prettier --write . && rk StyLua src test",
         "test": "lune run test",
         "watch": "rbxtsc -w",
         "docs": "typedoc",

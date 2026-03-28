@@ -23,7 +23,17 @@ end
 function assertClose(actual, expected, epsilon, msg)
 	epsilon = epsilon or 1e-9
 	if math.abs(actual - expected) >= epsilon then
-		error((msg or "") .. " Expected "..tostring(actual).." ≈ "..tostring(expected).." (epsilon="..tostring(epsilon)..")", 2)
+		error(
+			(msg or "")
+				.. " Expected "
+				.. tostring(actual)
+				.. " ≈ "
+				.. tostring(expected)
+				.. " (epsilon="
+				.. tostring(epsilon)
+				.. ")",
+			2
+		)
 	end
 end
 
@@ -70,14 +80,12 @@ function runTests()
 		end
 	end
 	print("Tests finished. Passed:", passed, "Failed:", failed)
-    if failed > 0 then
-        process.exit(1)
-    else
-        process.exit(0)
-    end
+	if failed > 0 then
+		process.exit(1)
+	else
+		process.exit(0)
+	end
 end
-
-
 
 --- Construction
 
@@ -120,7 +128,7 @@ addTest("scientificNotation: handles scientific notation in various formats", fu
 	local cases = {
 		{ input = "1.23e+45", expected = 1.23e45 },
 		{ input = "1.23e-5", expected = 1.23e-5 },
-		{ input = "1e10", expected = 1e10 }
+		{ input = "1e10", expected = 1e10 },
 	}
 	for _, case in ipairs(cases) do
 		local num = AlyaNum.fromScientific(case.input)
@@ -234,7 +242,7 @@ addTest("toEChain: very large number", function()
 	local a = AlyaNum.fromScientific("1e100")
 	local b = AlyaNum.fromScientific("1e100")
 	local c = a ^ b
-	assert(c:toEChain():sub(1,2) == "ee")
+	assert(c:toEChain():sub(1, 2) == "ee")
 end)
 
 --- Edge cases
@@ -411,7 +419,7 @@ end)
 addTest("large: basic operations with googol", function()
 	local googol = AlyaNum.new(10):pow(AlyaNum.new(100))
 	local two = AlyaNum.new(2)
-	
+
 	-- Test basic operations
 	local doubled = googol:mul(two)
 	local halved = doubled:div(two)
@@ -422,12 +430,12 @@ addTest("large: tetration basic", function()
 	local two = AlyaNum.new(2)
 	local three = AlyaNum.new(3)
 	local four = AlyaNum.new(4)
-	
+
 	-- 2^^3 = 2^(2^2) = 2^4 = 16
 	local tet_result = two:tet(three)
 	local expected = AlyaNum.new(16)
 	assertEquals(tet_result, expected, "2^^3 should equal 16")
-	
+
 	-- 2^^4 = 2^(2^(2^2)) = 2^16 = 65536
 	local tet4_result = two:tet(four)
 	local expected4 = AlyaNum.new(65536)
@@ -437,7 +445,7 @@ end)
 addTest("large: pentation basic", function()
 	local two = AlyaNum.new(2)
 	local three = AlyaNum.new(3)
-	
+
 	-- 2^^^3 = 2^^(2^^2) = 2^^4 = 65536
 	local pent_result = two:pent(three)
 	local expected = AlyaNum.new(65536)
@@ -447,7 +455,7 @@ end)
 addTest("large: hexation basic", function()
 	local two = AlyaNum.new(2)
 	local three = AlyaNum.new(3)
-	
+
 	-- 2^^^^3 = 2^^^(2^^^2) = 2^^^4, which should be a very large number
 	local hex_result = two:hext(three)
 	assertMoreThan(hex_result, AlyaNum.new(65536), "2^^^^3 should be larger than 65536")
@@ -455,12 +463,14 @@ end)
 
 addTest("large: extreme numbers within safe limit", function()
 	-- Test numbers approaching the safe limits mentioned in the code
-	local large_exp = AlyaNum.new({sign = 1, multiplicand = 100, exponent = 1, tetrate = 0, pentate = 0, hexate = 0, heptate = 0})
-	local larger_exp = AlyaNum.new({sign = 1, multiplicand = 101, exponent = 1, tetrate = 0, pentate = 0, hexate = 0, heptate = 0})
-	
+	local large_exp =
+		AlyaNum.new({ sign = 1, multiplicand = 100, exponent = 1, tetrate = 0, pentate = 0, hexate = 0, heptate = 0 })
+	local larger_exp =
+		AlyaNum.new({ sign = 1, multiplicand = 101, exponent = 1, tetrate = 0, pentate = 0, hexate = 0, heptate = 0 })
+
 	-- Test basic operations
 	assertMoreThan(larger_exp, large_exp, "Larger exponent number should be greater")
-	
+
 	local sum = large_exp:add(larger_exp)
 	assertMoreThan(sum, larger_exp, "Sum should be greater than either addend")
 end)
@@ -469,7 +479,7 @@ addTest("large: tetration with moderate values", function()
 	-- Test tetration with values that stay within reasonable bounds
 	local base = AlyaNum.new(3)
 	local height = AlyaNum.new(3)
-	
+
 	-- 3^^3 = 3^(3^3) = 3^27 = 7625597484987
 	local result = base:tet(height)
 	assertMoreThan(result, AlyaNum.new(1e12), "3^^3 should be very large")
@@ -478,11 +488,11 @@ end)
 addTest("large: operations with scientific notation", function()
 	local huge1 = AlyaNum.fromScientific("1e1000")
 	local huge2 = AlyaNum.fromScientific("2e1000")
-	
+
 	-- Test that operations work with very large numbers
 	local sum = huge1:add(huge2)
 	assertMoreThan(sum, huge2, "Sum of huge numbers should be larger")
-	
+
 	local product = huge1:mul(huge2)
 	assertMoreThan(product, sum, "Product should be much larger than sum")
 end)
@@ -491,7 +501,7 @@ addTest("large: hyperoperations maintain properties", function()
 	local a = AlyaNum.new(2)
 	local b = AlyaNum.new(3)
 	local c = AlyaNum.new(2)
-	
+
 	-- Test that tetration with same base and height gives same result
 	local tet1 = a:tet(b)
 	local tet2 = c:tet(b)
@@ -501,29 +511,29 @@ end)
 addTest("large: numbers approaching 10^^^^10 limit", function()
 	-- Test numbers with significant hyperoperation levels but within safe bounds
 	local near_limit1 = AlyaNum.new({
-		sign = 1, 
-		multiplicand = 100, 
-		exponent = 10, 
-		tetrate = 5, 
-		pentate = 3, 
-		hexate = 2, 
-		heptate = 0
+		sign = 1,
+		multiplicand = 100,
+		exponent = 10,
+		tetrate = 5,
+		pentate = 3,
+		hexate = 2,
+		heptate = 0,
 	})
 
-    local near_limit2 = AlyaNum.new({
-		sign = 1, 
-		multiplicand = 400, 
-		exponent = 10, 
-		tetrate = 5, 
-		pentate = 3, 
-		hexate = 2, 
-		heptate = 0
+	local near_limit2 = AlyaNum.new({
+		sign = 1,
+		multiplicand = 400,
+		exponent = 10,
+		tetrate = 5,
+		pentate = 3,
+		hexate = 2,
+		heptate = 0,
 	})
-	
+
 	-- Test basic operations work
 	local doubled = near_limit1:mul(near_limit2)
 	assertMoreEquals(doubled, near_limit2, "Operations should work on extreme numbers")
-	
+
 	-- Test string conversion works
 	local str = near_limit1:toString()
 	assert(type(str) == "string" and #str > 0, "Should convert to string")
@@ -534,7 +544,7 @@ end)
 addTest("edge: zero in various operations", function()
 	local zero = AlyaNum.new(0)
 	local nonzero = AlyaNum.new(42)
-	
+
 	-- Test zero behavior
 	assertEquals(zero:mul(nonzero), zero, "0 * a should equal 0")
 	assertEquals(zero:pow(nonzero), zero, "0^a should equal 0 (for positive a)")
@@ -544,7 +554,7 @@ end)
 addTest("edge: one in hyperoperations", function()
 	local one = AlyaNum.new(1)
 	local any = AlyaNum.new(42)
-	
+
 	-- Test one behavior in hyperoperations
 	assertEquals(one:tet(any), one, "1^^a should equal 1")
 	assertEquals(one:pent(any), one, "1^^^a should equal 1")
@@ -554,14 +564,14 @@ end)
 addTest("edge: negative numbers", function()
 	local neg = AlyaNum.new(-5)
 	local pos = AlyaNum.new(3)
-	
+
 	-- Test negative number operations
 	local sum = neg:add(pos)
 	assertEqual(sum:toNumber(), -2)
-	
+
 	local product = neg:mul(pos)
 	assertEqual(product:toNumber(), -15)
-	
+
 	-- Test absolute value
 	assertEquals(neg:abs(), AlyaNum.new(5), "abs(-5) should equal 5")
 end)
@@ -569,11 +579,11 @@ end)
 addTest("edge: very small numbers", function()
 	local tiny = AlyaNum.new(1e-100)
 	local small = AlyaNum.new(1e-50)
-	
+
 	-- Test operations with very small numbers
 	local sum = tiny:add(small)
 	assertMoreEquals(sum, small, "Sum should be dominated by larger number")
-	
+
 	local product = tiny:mul(small)
 	assertLessThan(product, tiny, "Product should be smaller")
 end)
@@ -582,7 +592,7 @@ addTest("edge: comparison edge cases", function()
 	local a = AlyaNum.new(1)
 	local b = AlyaNum.new(1)
 	local c = AlyaNum.new(2)
-	
+
 	-- Test equality and comparison
 	assertEquals(a, b, "Equal numbers should be equal")
 	assert(not a:equals(c), "Different numbers should not be equal")
@@ -595,10 +605,17 @@ end)
 addTest("edge: string parsing edge cases", function()
 	-- Test various string formats
 	local cases = {
-		"0", "1", "-1", "123.456", "-123.456",
-		"1e5", "-1e5", "1.5e10", "-2.3e-5"
+		"0",
+		"1",
+		"-1",
+		"123.456",
+		"-123.456",
+		"1e5",
+		"-1e5",
+		"1.5e10",
+		"-2.3e-5",
 	}
-	
+
 	for _, case in ipairs(cases) do
 		local num = AlyaNum.fromString(case)
 		assert(num ~= nil, "Should parse string: " .. case)
@@ -612,10 +629,10 @@ end)
 addTest("edge: min/max operations", function()
 	local a = AlyaNum.new(5)
 	local b = AlyaNum.new(10)
-	
+
 	assertEquals(a:min(b), a, "min(5,10) should equal 5")
 	assertEquals(a:max(b), b, "max(5,10) should equal 10")
-	
+
 	local min_val, max_val = a:minmax(b)
 	assertEquals(min_val, a, "minmax should return min first")
 	assertEquals(max_val, b, "minmax should return max second")
@@ -625,14 +642,22 @@ addTest("edge: lbencode/lbdecode precision", function()
 	local a = AlyaNum.new(1)
 	assertEquals(AlyaNum.lbdecode(a:lbencode()), a, "lbencode/decode should preserve value at this scale")
 
-    local b = AlyaNum.new(5.24)
-    assertEquals(AlyaNum.lbdecode(b:lbencode()), b, "lbencode/decode should preserve value for small decimals")
+	local b = AlyaNum.new(5.24)
+	assertEquals(AlyaNum.lbdecode(b:lbencode()), b, "lbencode/decode should preserve value for small decimals")
 
-    local c = AlyaNum.new(0)
-    assertEquals(AlyaNum.lbdecode(c:lbencode()), c, "lbencode/decode should preserve zero")
+	local c = AlyaNum.new(0)
+	assertEquals(AlyaNum.lbdecode(c:lbencode()), c, "lbencode/decode should preserve zero")
 
-    local d = AlyaNum.new(-20)
-    assertEquals(AlyaNum.lbdecode(d:lbencode()), d, "lbencode/decode should preserve negative numbers")
+	local d = AlyaNum.new(-20)
+	assertEquals(AlyaNum.lbdecode(d:lbencode()), d, "lbencode/decode should preserve negative numbers")
+end)
+
+addTest("edge: 0e0", function()
+	local a = AlyaNum.fromString("0e0")
+	assertEqual(a:toNumber(), 0)
+
+	local b = AlyaNum.toSuffix(a)
+	assertEqual("0", b)
 end)
 
 runTests()
