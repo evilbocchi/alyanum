@@ -42,7 +42,7 @@
         "eslint": "^10.1.0",
         "eslint-plugin-roblox-ts": "^1.4.0",
         "prettier": "^3.8.1",
-        "rkkit": "^0.0.0",
+        "rkkit": "^0.0.1",
         "roblox-ts": "^3.0.0",
         "typedoc": "^0.28.18",
         "typedoc-material-theme": "^1.4.1",
