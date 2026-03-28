@@ -4,6 +4,7 @@
     "description": "Alisa Mikhailovna \"Alya\" Kujou's go-to big number library for small and large-scale incremental games!",
     "main": "AlyaNum/init.lua",
     "scripts": {
+        "prepare": "rokit install --no-trust-check",
         "build": "rbxtsc && lune run release.luau",
         "format": "prettier --write . && rk StyLua src test",
         "test": "lune run test",
