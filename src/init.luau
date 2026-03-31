@@ -1365,9 +1365,9 @@ end
 -- imported from serikanum
 function serikaNumEnforceDP(mantissa: number, exponent: number): string
 	if DECIMAL_POINTS <= 0 then
-		return tostring(math.floor(mantissa * math.pow(10, exponent)))
+		return tostring(math.round(mantissa * math.pow(10, exponent)))
 	else
-		return tostring(math.floor(mantissa * math.pow(10, exponent) * DP_OFFSET) / DP_OFFSET)
+		return tostring(math.round(mantissa * math.pow(10, exponent) * DP_OFFSET) / DP_OFFSET)
 	end
 end
 
@@ -1956,6 +1956,7 @@ end
 
 function AlyaNum.changeDecimalPoints(decimalPoints: number)
 	DECIMAL_POINTS = decimalPoints
+	DP_OFFSET = math.pow(10, DECIMAL_POINTS)
 end
 
 function AlyaNum.changeDefaultAbbreviation(mode: "suffix" | "scientific")

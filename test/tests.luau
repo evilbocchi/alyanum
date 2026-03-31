@@ -660,4 +660,22 @@ addTest("edge: 0e0", function()
 	assertEqual("0", b)
 end)
 
+addTest("edge: 1e6 + 50k", function()
+	local a = AlyaNum.new(1000000)
+	local b = AlyaNum.new(5000)
+	local c = a
+    for i = 1, 10 do
+        c = c:add(b)
+    end
+	assertEqual(c:toNumber(), 1050000)
+end)
+
+addTest("format: changeDecimalPoints updates precision", function()
+	local value = AlyaNum.new(1009000)
+	AlyaNum.changeDecimalPoints(3)
+	assertEqual(value:toSuffix(), "1.009M")
+	AlyaNum.changeDecimalPoints(2)
+	assertEqual(value:toSuffix(), "1.01M")
+end)
+
 runTests()
