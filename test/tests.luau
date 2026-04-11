@@ -670,6 +670,11 @@ addTest("edge: 1e6 + 50k", function()
 	assertEqual(c:toNumber(), 1050000)
 end)
 
+addTest("edge: lbdecode(lbencode(0))", function()
+	local a = AlyaNum.lbencode(0)
+    assertEqual(AlyaNum.lbdecode(a), 0, "lbdecode(lbencode(0)) should return 0")
+end)
+
 addTest("format: changeDecimalPoints updates precision", function()
 	local value = AlyaNum.new(1009000)
 	AlyaNum.changeDecimalPoints(3)
@@ -677,5 +682,7 @@ addTest("format: changeDecimalPoints updates precision", function()
 	AlyaNum.changeDecimalPoints(2)
 	assertEqual(value:toSuffix(), "1.01M")
 end)
+
+
 
 runTests()
