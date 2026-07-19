@@ -6,5 +6,5 @@
 [tools]
 rojo = "rojo-rbx/rojo@7.7.0-rc.1"
 wally = "UpliftGames/wally@0.3.2"
-lune = "lune-org/lune@0.10.4"
+lune = "lune-org/lune@0.10.5"
 StyLua = "JohnnyMorganz/StyLua@2.4.0"

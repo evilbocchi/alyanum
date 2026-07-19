@@ -32,23 +32,20 @@
     "publishConfig": {
         "access": "public"
     },
-    "overrides": {
-        "brace-expansion": "5.0.5"
-    },
     "devDependencies": {
         "@rbxts/compiler-types": "^3.0.0-types.0",
-        "@rbxts/types": "^1.0.912",
-        "@typescript-eslint/eslint-plugin": "^8.57.2",
-        "@typescript-eslint/parser": "^8.57.2",
-        "eslint": "^10.1.0",
+        "@rbxts/types": "^1.0.939",
+        "@typescript-eslint/eslint-plugin": "^8.64.0",
+        "@typescript-eslint/parser": "^8.64.0",
+        "eslint": "^10.7.0",
         "eslint-plugin-roblox-ts": "^1.4.0",
-        "prettier": "^3.8.1",
-        "rkkit": "^0.0.1",
+        "prettier": "^3.9.5",
+        "rkkit": "^0.0.3",
         "roblox-ts": "^3.0.0",
         "typedoc": "^0.28.18",
         "typedoc-material-theme": "^1.4.1",
         "typedoc-plugin-extras": "^4.0.1",
-        "typedoc-plugin-missing-exports": "^4.1.2",
+        "typedoc-plugin-missing-exports": "^4.1.4",
         "typedoc-plugin-rename-defaults": "^0.7.3",
         "typescript": "^5.5.3"
     }

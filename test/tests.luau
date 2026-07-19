@@ -14,7 +14,7 @@ function addTest(name, fn)
 	table.insert(tests, { name = name, fn = fn })
 end
 
-function assertEqual(actual, expected, msg)
+function assertStrictEqual(actual, expected, msg)
 	if actual ~= expected then
 		error(msg or ("Expected " .. tostring(expected) .. ", got " .. tostring(actual)), 2)
 	end
@@ -91,27 +91,27 @@ end
 
 addTest("fromNumber: creates from number", function()
 	local num = AlyaNum.new(5)
-	assertEqual(num:toNumber(), 5)
+	assertStrictEqual(num:toNumber(), 5)
 end)
 
 addTest("fromNumber: creates from negative number", function()
 	local num = AlyaNum.new(-10)
-	assertEqual(num:toNumber(), -10)
+	assertStrictEqual(num:toNumber(), -10)
 end)
 
 addTest("fromString: creates from string", function()
 	local num = AlyaNum.fromString("12345")
-	assertEqual(num:toNumber(), 12345)
+	assertStrictEqual(num:toNumber(), 12345)
 end)
 
 addTest("fromString: handles negative strings", function()
 	local num = AlyaNum.fromString("-67890")
-	assertEqual(num:toNumber(), -67890)
+	assertStrictEqual(num:toNumber(), -67890)
 end)
 
 addTest("fromString: handles zero string", function()
 	local num = AlyaNum.fromString("0")
-	assertEqual(num:toNumber(), 0)
+	assertStrictEqual(num:toNumber(), 0)
 end)
 
 addTest("scientificNotation: parses scientific notation", function()
@@ -141,42 +141,42 @@ end)
 addTest("add: simple addition", function()
 	local a = AlyaNum.new(2)
 	local b = AlyaNum.new(3)
-	assertEqual((a + b):toNumber(), 5)
+	assertStrictEqual((a + b):toNumber(), 5)
 end)
 
 addTest("sub: simple subtraction", function()
 	local a = AlyaNum.new(10)
 	local b = AlyaNum.new(4)
-	assertEqual((a - b):toNumber(), 6)
+	assertStrictEqual((a - b):toNumber(), 6)
 end)
 
 addTest("mul: simple multiplication", function()
 	local a = AlyaNum.new(7)
 	local b = AlyaNum.new(6)
-	assertEqual((a * b):toNumber(), 42)
+	assertStrictEqual((a * b):toNumber(), 42)
 end)
 
 addTest("div: simple division", function()
 	local a = AlyaNum.new(20)
 	local b = AlyaNum.new(5)
-	assertEqual((a / b):toNumber(), 4)
+	assertStrictEqual((a / b):toNumber(), 4)
 end)
 
 addTest("pow: simple power", function()
 	local a = AlyaNum.new(2)
 	local b = AlyaNum.new(8)
-	assertEqual((a ^ b):toNumber(), 256)
+	assertStrictEqual((a ^ b):toNumber(), 256)
 end)
 
 addTest("mod: simple modulo", function()
 	local a = AlyaNum.new(17)
 	local b = AlyaNum.new(5)
-	assertEqual((a % b):toNumber(), 2)
+	assertStrictEqual((a % b):toNumber(), 2)
 end)
 
 addTest("unary minus", function()
 	local a = AlyaNum.new(9)
-	assertEqual((-a):toNumber(), -9)
+	assertStrictEqual((-a):toNumber(), -9)
 end)
 
 addTest("reciprocal", function()
@@ -220,12 +220,12 @@ end)
 
 addTest("toString: small number", function()
 	local a = AlyaNum.new(42)
-	assertEqual(a:toString(), "42")
+	assertStrictEqual(a:toString(), "42")
 end)
 
 addTest("toString: negative number", function()
 	local a = AlyaNum.new(-123)
-	assertEqual(a:toString(), "-123")
+	assertStrictEqual(a:toString(), "-123")
 end)
 
 addTest("toSuffix: large number", function()
@@ -250,25 +250,25 @@ end)
 addTest("zero: addition", function()
 	local a = AlyaNum.new(0)
 	local b = AlyaNum.new(5)
-	assertEqual((a + b):toNumber(), 5)
+	assertStrictEqual((a + b):toNumber(), 5)
 end)
 
 addTest("zero: multiplication", function()
 	local a = AlyaNum.new(0)
 	local b = AlyaNum.new(123)
-	assertEqual((a * b):toNumber(), 0)
+	assertStrictEqual((a * b):toNumber(), 0)
 end)
 
 addTest("negative: multiplication", function()
 	local a = AlyaNum.new(-3)
 	local b = AlyaNum.new(7)
-	assertEqual((a * b):toNumber(), -21)
+	assertStrictEqual((a * b):toNumber(), -21)
 end)
 
 addTest("negative: division", function()
 	local a = AlyaNum.new(-12)
 	local b = AlyaNum.new(3)
-	assertEqual((a / b):toNumber(), -4)
+	assertStrictEqual((a / b):toNumber(), -4)
 end)
 
 addTest("isInteger: integer", function()
@@ -295,7 +295,7 @@ end)
 
 addTest("fromString: suffix", function()
 	local num = AlyaNum.fromString("1M")
-	assertEqual(num:toNumber(), 1e6)
+	assertStrictEqual(num:toNumber(), 1e6)
 end)
 
 addTest("fromString: scientific", function()
@@ -310,12 +310,12 @@ end)
 
 addTest("fromString: zero", function()
 	local num = AlyaNum.fromString("0")
-	assertEqual(num:toNumber(), 0)
+	assertStrictEqual(num:toNumber(), 0)
 end)
 
 addTest("fromString: fallback", function()
 	local num = AlyaNum.fromString("999")
-	assertEqual(num:toNumber(), 999)
+	assertStrictEqual(num:toNumber(), 999)
 end)
 
 --- Mathematical Properties Tests
@@ -567,10 +567,10 @@ addTest("edge: negative numbers", function()
 
 	-- Test negative number operations
 	local sum = neg:add(pos)
-	assertEqual(sum:toNumber(), -2)
+	assertStrictEqual(sum:toNumber(), -2)
 
 	local product = neg:mul(pos)
-	assertEqual(product:toNumber(), -15)
+	assertStrictEqual(product:toNumber(), -15)
 
 	-- Test absolute value
 	assertEquals(neg:abs(), AlyaNum.new(5), "abs(-5) should equal 5")
@@ -654,35 +654,33 @@ end)
 
 addTest("edge: 0e0", function()
 	local a = AlyaNum.fromString("0e0")
-	assertEqual(a:toNumber(), 0)
+	assertStrictEqual(a:toNumber(), 0)
 
 	local b = AlyaNum.toSuffix(a)
-	assertEqual("0", b)
+	assertStrictEqual("0", b)
 end)
 
 addTest("edge: 1e6 + 50k", function()
 	local a = AlyaNum.new(1000000)
 	local b = AlyaNum.new(5000)
 	local c = a
-    for i = 1, 10 do
-        c = c:add(b)
-    end
-	assertEqual(c:toNumber(), 1050000)
+	for i = 1, 10 do
+		c = c:add(b)
+	end
+	assertStrictEqual(c:toNumber(), 1050000)
 end)
 
 addTest("edge: lbdecode(lbencode(0))", function()
-	local a = AlyaNum.lbencode(0)
-    assertEqual(AlyaNum.lbdecode(a), 0, "lbdecode(lbencode(0)) should return 0")
+	local a = AlyaNum.lbencode(AlyaNum.new(0))
+	assertEquals(AlyaNum.lbdecode(a), 0)
 end)
 
 addTest("format: changeDecimalPoints updates precision", function()
 	local value = AlyaNum.new(1009000)
 	AlyaNum.changeDecimalPoints(3)
-	assertEqual(value:toSuffix(), "1.009M")
+	assertStrictEqual(value:toSuffix(), "1.009M")
 	AlyaNum.changeDecimalPoints(2)
-	assertEqual(value:toSuffix(), "1.01M")
+	assertStrictEqual(value:toSuffix(), "1.01M")
 end)
-
-
 
 runTests()
