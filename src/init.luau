@@ -518,7 +518,7 @@ end
 function mutablePow10(number: AlyaNum): AlyaNum
 	if number.sign == 1 then
 		number.exponent += 1
-		return number
+		return fix(number)
 	else
 		return AlyaNum.new(math.pow(10, toNumber(number)))
 	end
