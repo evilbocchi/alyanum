@@ -2269,7 +2269,7 @@ end
 -- fun little things
 
 --- A googol, 10^100.
-AlyaNum.GOOGOL = AlyaNum.new(10e100)
+AlyaNum.GOOGOL = AlyaNum.new(1e100)
 
 --- A googolplex, 10^(10^100).
 AlyaNum.GOOGOLPLEX = AlyaNum.new(10):pow(AlyaNum.GOOGOL)

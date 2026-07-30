@@ -683,4 +683,8 @@ addTest("format: changeDecimalPoints updates precision", function()
 	assertStrictEqual(value:toSuffix(), "1.01M")
 end)
 
+addTest("googol is 10^100", function()
+    assertEquals(AlyaNum.GOOGOL, AlyaNum.new(10):pow(100))
+end)
+
 runTests()
