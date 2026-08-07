@@ -19,7 +19,7 @@ Getting started with AlyaNum is simple! Choose your preferred method:
 
 1. **Roblox Toolbox:** [AlyaNum on Roblox](https://create.roblox.com/store/asset/18985449198/AlyaNum)
 2. **Wally:** [evilbocchi/alyanum](https://wally.run/package/evilbocchi/alyanum)
-3. **npm (for roblox-ts):** [@antivivi/alyanum](https://www.npmjs.com/package/@antivivi/alyanum)
+3. **npm (for roblox-ts):** [@rbxts/alyanum](https://www.npmjs.com/package/@rbxts/alyanum)
 
 ## Basic Usage
 

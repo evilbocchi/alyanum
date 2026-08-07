@@ -3,6 +3,11 @@
 [![Build](https://github.com/evilbocchi/alyanum/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/evilbocchi/alyanum/actions/workflows/ci.yml)
 [![GitHub](https://img.shields.io/github/release/evilbocchi/alyanum.svg)](https://github.com/evilbocchi/alyanum/releases/latest)
 
+```sh
+wally add evilbocchi/alyanum # For Wally users
+npm install @rbxts/alyanum # For roblox-ts users
+```
+
 **AlyaNum** is the ultimate big number library for Roblox incremental games, perfect for both small and large-scale projects!
 
 This library is a high-performance fork of [OmegaNum](https://create.roblox.com/store/asset/11646892509/OmegaNum-Readable) by FoundForces and [Naruyoko](https://github.com/Naruyoko), completely rewritten for speed, clarity, and maintainability. AlyaNum stands out with its extraordinary limit: numbers up to 10^^^^^10 (heptation), a value so large it's virtually unreachable in any Roblox game.

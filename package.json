@@ -1,5 +1,5 @@
 {
-    "name": "@antivivi/alyanum",
+    "name": "@rbxts/alyanum",
     "version": "1.1.12",
     "description": "Alisa Mikhailovna \"Alya\" Kujou's go-to big number library for small and large-scale incremental games!",
     "main": "AlyaNum/init.lua",
@@ -31,9 +31,6 @@
     ],
     "publishConfig": {
         "access": "public"
-    },
-    "overrides": {
-        "brace-expansion": "^5.0.7"
     },
     "devDependencies": {
         "@rbxts/compiler-types": "^3.0.0-types.0",
