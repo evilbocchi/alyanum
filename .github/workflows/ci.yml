@@ -23,6 +23,10 @@ jobs:
         run: |
           npm install
 
+      - name: Run Luau LSP
+        run: |
+          npm run lint
+
       - name: Run tests
         run: |
           npm run test
