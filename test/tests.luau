@@ -51,6 +51,11 @@ describe("Construction", function()
 			expect(num:toNumber() / case.expected):toBeCloseTo(1, 9)
 		end
 	end)
+
+	test("scientificNotation: accepts uppercase E", function()
+		expect(AlyaNum.fromScientific("1.25E3"):toNumber()):toBeCloseTo(1250, 9)
+		expect(AlyaNum.fromString("-2.5E-2"):toNumber()):toBeCloseTo(-0.025, 9)
+	end)
 end)
 
 describe("Arithmetic", function()
