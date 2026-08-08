@@ -740,15 +740,6 @@ end
 --- @returns AlyaNum | nil
 --- @see https://en.wikipedia.org/wiki/Iterated_logarithm
 function slog(self: AlyaNum, base: Number): AlyaNum?
-	self = {
-		sign = self.sign,
-		multiplicand = self.multiplicand,
-		exponent = self.exponent,
-		tetrate = self.tetrate,
-		pentate = self.pentate,
-		hexate = self.hexate,
-		heptate = self.heptate,
-	}
 	base = AlyaNum.new(base)
 	if self.sign == -1 then
 		return NEG_ONE
@@ -757,10 +748,10 @@ function slog(self: AlyaNum, base: Number): AlyaNum?
 	elseif equals(self, base) then
 		return ONE
 	elseif lessThan(base, ERECIPE) then
-		return self
+		return fix(self)
 	elseif moreThan(max(self, base), MAX_TETRATE) then
 		if moreThan(self, base) then
-			return self
+			return fix(self)
 		end
 		return ZERO
 	elseif moreThan(max(self, base), MAX_POW) then
@@ -798,15 +789,6 @@ function slog(self: AlyaNum, base: Number): AlyaNum?
 end
 
 function pentlog(self: AlyaNum, base: Number): AlyaNum?
-	self = {
-		sign = self.sign,
-		multiplicand = self.multiplicand,
-		exponent = self.exponent,
-		tetrate = self.tetrate,
-		pentate = self.pentate,
-		hexate = self.hexate,
-		heptate = self.heptate,
-	}
 	base = AlyaNum.new(base)
 	if self.sign == -1 then
 		return NEG_ONE
@@ -818,7 +800,7 @@ function pentlog(self: AlyaNum, base: Number): AlyaNum?
 		return self
 	elseif moreThan(max(self, base), MAX_PENTATE) then
 		if moreThan(self, base) then
-			return self
+			return fix(self)
 		end
 		return ZERO
 	elseif moreThan(max(self, base), MAX_TETRATE) then
@@ -845,7 +827,11 @@ function pentlog(self: AlyaNum, base: Number): AlyaNum?
 				return AlyaNum.new(q + toNumber(self) - 1)
 			else
 				q += 1
-				self = slog(self, base)
+				local nextValue = slog(self, base)
+				if nextValue == nil then
+					return nil
+				end
+				self = nextValue
 			end
 		end
 	end
@@ -856,15 +842,6 @@ function pentlog(self: AlyaNum, base: Number): AlyaNum?
 end
 
 function hextlog(self: AlyaNum, base: Number): AlyaNum?
-	self = {
-		sign = self.sign,
-		multiplicand = self.multiplicand,
-		exponent = self.exponent,
-		tetrate = self.tetrate,
-		pentate = self.pentate,
-		hexate = self.hexate,
-		heptate = self.heptate,
-	}
 	base = AlyaNum.new(base)
 	if self.sign == -1 then
 		return NEG_ONE
@@ -876,7 +853,7 @@ function hextlog(self: AlyaNum, base: Number): AlyaNum?
 		return self
 	elseif moreThan(max(self, base), MAX_HEXATE) then
 		if moreThan(self, base) then
-			return self
+			return fix(self)
 		end
 		return ZERO
 	elseif moreThan(max(self, base), MAX_PENTATE) then
@@ -903,7 +880,11 @@ function hextlog(self: AlyaNum, base: Number): AlyaNum?
 				return AlyaNum.new(q + toNumber(self) - 1)
 			else
 				q += 1
-				self = pentlog(self, base)
+				local nextValue = pentlog(self, base)
+				if nextValue == nil then
+					return nil
+				end
+				self = nextValue
 			end
 		end
 	end
@@ -944,8 +925,11 @@ function tetrate(self: AlyaNum, number: AlyaNum): AlyaNum
 			local nel = mutableUnary(log(self, E))
 			return div(lambertw(nel), nel)
 		end
-
-		local q = add(slog(self, TEN), number)
+		local slogSelf = slog(self, TEN)
+		if slogSelf == nil then
+			error("slog failed to compute for tetrate")
+		end
+		local q = add(slogSelf, number)
 		q.tetrate += 1
 		return fix(q)
 	end
@@ -1019,7 +1003,11 @@ function pentate(self: AlyaNum, number: AlyaNum): AlyaNum
 			local nel = mutableUnary(log(self, E))
 			return div(lambertw(nel), nel)
 		end
-		local q = add(slog(self, TEN), number)
+		local slogSelf = slog(self, TEN)
+		if slogSelf == nil then
+			error("slog failed to compute for tetrate")
+		end
+		local q = add(slogSelf, number)
 		q.tetrate = number.tetrate
 		q.pentate = number.pentate + 1
 		return fix(q)
@@ -1044,6 +1032,9 @@ function pentate(self: AlyaNum, number: AlyaNum): AlyaNum
 			floored -= 1
 		else
 			result = slog(result, self)
+			if result == nil then
+				error("slog failed to compute for pentate")
+			end
 			if equals(check, result) then
 				floored = 0
 				break
@@ -1055,6 +1046,9 @@ function pentate(self: AlyaNum, number: AlyaNum): AlyaNum
 	if count == 100 or lessThan(self, ERECIPE) then
 		floored = 0
 	end
+    if result == nil then
+        error("result is nil in pentate")
+    end
 	result.tetrate += floored
 	return fix(result)
 end
@@ -1090,7 +1084,11 @@ function hexate(self: AlyaNum, number: AlyaNum): AlyaNum
 			local nel = mutableUnary(log(self, E))
 			return div(lambertw(nel), nel)
 		end
-		local q = add(slog(self, TEN), number)
+        local slogSelf = slog(self, TEN)
+        if slogSelf == nil then
+            error("slog failed to compute for hexate")
+        end
+		local q = add(slogSelf, number)
 		q.tetrate = number.tetrate
 		q.pentate = number.pentate
 		q.hexate = number.hexate + 1
@@ -1116,6 +1114,9 @@ function hexate(self: AlyaNum, number: AlyaNum): AlyaNum
 			floored -= 1
 		else
 			result = pentlog(result, self)
+            if result == nil then
+                error("pentlog failed to compute for hexate")
+            end
 			if equals(check, result) then
 				floored = 0
 				break
@@ -1127,6 +1128,9 @@ function hexate(self: AlyaNum, number: AlyaNum): AlyaNum
 	if count == 100 or lessThan(self, ERECIPE) then
 		floored = 0
 	end
+    if result == nil then
+        error("result is nil in hexate")
+    end
 	result.pentate += floored
 	return fix(result)
 end
@@ -1417,7 +1421,7 @@ end
 
 function getTier2Suffix(exponent: number): string?
 	if exponent == HUGE then
-		return
+		return nil
 	end
 	exponent = math.floor(exponent / 3) - 1
 	local suffix = ""
@@ -1449,7 +1453,10 @@ function serikaNumToSuffix(mantissa: number, exponent: number): string
 		return serikaNumEnforceDP(mantissa, exponent)
 	end
 	local suffix = exponent > 3002 and getTier2Suffix(exponent) or getTier1Suffix(exponent, true)
-	return suffix and serikaNumEnforceDP(mantissa, exponent % 3) .. suffix
+	if suffix == nil then
+		return serikaNumToScientific(mantissa, exponent)
+	end
+	return serikaNumEnforceDP(mantissa, exponent % 3) .. suffix
 end
 
 function numberToSuffix(number: number): string
@@ -1629,11 +1636,30 @@ function fromSuffix(str: string): AlyaNum?
 	local mantissa = tonumber(string.sub(str, 1, (string.find(str, suffix) or #str + 1) - 1))
 
 	local exponent = getSuffixExponent(suffix)
-	if mantissa ~= nil and exponent > 0 then
+	if mantissa ~= nil and exponent ~= nil and exponent > 0 then
 		return AlyaNum.fromOnoe({ mantissa = mantissa, exponent = exponent })
 	else
 		return nil
 	end
+end
+
+local function parseNumberArray(value: string): { number }?
+	local body = value:match("^%s*%[(.-)%]%s*$")
+	if body == nil then
+		return nil
+	end
+
+	local values = {}
+	for _, token in string.split(body, ",") do
+		local trimmed = token:match("^%s*(.-)%s*$")
+		local number = tonumber(trimmed)
+		if number == nil then
+			return nil
+		end
+		values[#values + 1] = number
+	end
+
+	return values
 end
 
 function AlyaNum.fromString(str): AlyaNum
@@ -1704,7 +1730,7 @@ function AlyaNum.fromString(str): AlyaNum
 			end
 			return fix({
 				sign = sign,
-				multiplicand = tonumber(first),
+				multiplicand = tonumber(first) or 0,
 				exponent = second,
 				tetrate = 0,
 				pentate = 0,
@@ -1713,11 +1739,11 @@ function AlyaNum.fromString(str): AlyaNum
 			})
 		end
 	end
-	if string.find(str, ",") or string.find(str, "%[") then
-		str = game.HttpService:JSONDecode(str)
-		str = { math.sign(str[1] or 1), str }
-		str[2][1] = math.abs(str[2][1] or 0)
-		return fix(AlyaNum.fromOmega(str))
+	local fields = parseNumberArray(str)
+	if fields ~= nil then
+		local sign = math.sign(fields[1] or 1)
+		fields[1] = math.abs(fields[1] or 0)
+		return fix(AlyaNum.fromOmega({ sign, fields }))
 	else
 		local fromSuff = fromSuffix(str)
 		if fromSuff ~= nil then
@@ -1728,7 +1754,7 @@ function AlyaNum.fromString(str): AlyaNum
 end
 
 function AlyaNum.toBaseAlya(self: AlyaNum): BaseAlyaNum
-	return setmetatable(self, nil) :: BaseAlyaNum
+	return (setmetatable(self, nil) :: unknown) :: BaseAlyaNum
 end
 
 -- completely stolen from omeganum
@@ -1943,11 +1969,11 @@ end
 
 function AlyaNum.fromScientific(str: string): AlyaNum
 	local split = string.split(str, "e")
-	local mantissa = AlyaNum.new(tonumber(split[1]))
+	local mantissa = AlyaNum.new(tonumber(split[1]) or 0)
 	if #split == 1 then
 		return mantissa
 	end
-	return mul(mantissa, mutablePow10(AlyaNum.new(tonumber(split[2]))))
+	return mul(mantissa, mutablePow10(AlyaNum.new(tonumber(split[2]) or 0)))
 end
 
 function AlyaNum.changeSuffixes(newSuffixes: typeof(suffixes))
