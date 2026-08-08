@@ -1,5 +1,6 @@
 {
     "js/ts.tsdk.path": "node_modules/typescript/lib",
+    "luau-lsp.fflags.enableNewSolver": true,
     "files.eol": "\n",
     "[typescript]": {
         "editor.defaultFormatter": "vscode.typescript-language-features",

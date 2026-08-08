@@ -740,7 +740,7 @@ end
 --- @returns AlyaNum | nil
 --- @see https://en.wikipedia.org/wiki/Iterated_logarithm
 function slog(self: AlyaNum, base: Number): AlyaNum?
-	local self = {
+	self = {
 		sign = self.sign,
 		multiplicand = self.multiplicand,
 		exponent = self.exponent,
@@ -749,7 +749,7 @@ function slog(self: AlyaNum, base: Number): AlyaNum?
 		hexate = self.hexate,
 		heptate = self.heptate,
 	}
-	local base = AlyaNum.new(base)
+	base = AlyaNum.new(base)
 	if self.sign == -1 then
 		return NEG_ONE
 	elseif equalsOne(self) then
@@ -798,7 +798,7 @@ function slog(self: AlyaNum, base: Number): AlyaNum?
 end
 
 function pentlog(self: AlyaNum, base: Number): AlyaNum?
-	local self = {
+	self = {
 		sign = self.sign,
 		multiplicand = self.multiplicand,
 		exponent = self.exponent,
@@ -807,7 +807,7 @@ function pentlog(self: AlyaNum, base: Number): AlyaNum?
 		hexate = self.hexate,
 		heptate = self.heptate,
 	}
-	local base = AlyaNum.new(base)
+	base = AlyaNum.new(base)
 	if self.sign == -1 then
 		return NEG_ONE
 	elseif equalsOne(self) then
@@ -856,7 +856,7 @@ function pentlog(self: AlyaNum, base: Number): AlyaNum?
 end
 
 function hextlog(self: AlyaNum, base: Number): AlyaNum?
-	local self = {
+	self = {
 		sign = self.sign,
 		multiplicand = self.multiplicand,
 		exponent = self.exponent,
@@ -865,7 +865,7 @@ function hextlog(self: AlyaNum, base: Number): AlyaNum?
 		hexate = self.hexate,
 		heptate = self.heptate,
 	}
-	local base = AlyaNum.new(base)
+	base = AlyaNum.new(base)
 	if self.sign == -1 then
 		return NEG_ONE
 	elseif equalsOne(self) then
@@ -2310,6 +2310,6 @@ AlyaNum.GRAHAM1 = AlyaNum.new({
 	heptate = 0,
 })
 
-export type AlyaNum = typeof(setmetatable({} :: BaseAlyaNum, AlyaNum))
+export type AlyaNum = setmetatable<BaseAlyaNum, typeof(AlyaNum)>
 
 return AlyaNum
