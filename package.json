@@ -37,7 +37,7 @@
         "@rbxts/compiler-types": "^3.0.0-types.0",
         "@rbxts/types": "^1",
         "prettier": "^3.9.6",
-        "rkkit": "^0.1.0",
+        "rkkit": "^0.1.1",
         "roblox-ts": "^3.0.0",
         "typedoc": "^0.28.20",
         "typedoc-material-theme": "^1.4.1",
