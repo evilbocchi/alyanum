@@ -3,13 +3,11 @@
     "luau-lsp.fflags.enableNewSolver": true,
     "luau-lsp.ignoreGlobs": ["bench/*"],
     "files.eol": "\n",
-    "[typescript]": {
-        "editor.defaultFormatter": "vscode.typescript-language-features",
-        "editor.formatOnSave": true
+    "[lua|luau]": {
+        "editor.defaultFormatter": "JohnnyMorganz.stylua"
     },
-    "[typescriptreact]": {
-        "editor.defaultFormatter": "dbaeumer.vscode-eslint",
-        "editor.formatOnSave": true
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "eslint.run": "onType",
     "eslint.format.enable": true
