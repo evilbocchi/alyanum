@@ -765,6 +765,255 @@ describe("Large numbers", function()
 	end)
 end)
 
+describe("Massive number correctness", function()
+	local ZERO = AlyaNum.new(0)
+	local ONE = AlyaNum.new(1)
+	local NEG_ONE = AlyaNum.new(-1)
+
+	local function makeMassive(exponent, tetrate, pentate, hexate, heptate): AlyaNumber
+		return AlyaNum.new({
+			sign = 1,
+			multiplicand = 100,
+			exponent = exponent,
+			tetrate = tetrate,
+			pentate = pentate,
+			hexate = hexate,
+			heptate = heptate,
+		})
+	end
+
+	local cases = {
+		{ name = "10^1000", value = AlyaNum.fromScientific("1e1000") },
+		{ name = "10^(10^100)", value = AlyaNum.fromString("ee100") },
+		{ name = "10^(10^(10^100))", value = AlyaNum.fromString("eee100") },
+		{ name = "four-level E chain", value = AlyaNum.fromString("eeee100") },
+		{ name = "tetration level one", value = makeMassive(0, 1, 0, 0, 0) },
+		{ name = "pentation level one", value = makeMassive(0, 0, 1, 0, 0) },
+		{ name = "hexation level one", value = makeMassive(0, 0, 0, 1, 0) },
+		{ name = "heptation level one", value = makeMassive(0, 0, 0, 0, 1) },
+	}
+
+	type Check = {
+		name: string,
+		run: () -> (),
+	}
+
+	local function assertAll(checks: { Check })
+		local failures = {}
+		for _, check in ipairs(checks) do
+			local ok, message = pcall(check.run)
+			if not ok then
+				failures[#failures + 1] = check.name .. ": " .. tostring(message)
+			end
+		end
+		if #failures > 0 then
+			error(table.concat(failures, "\n"), 2)
+		end
+	end
+
+	test("construction: preserves the massive representation ladder", function()
+		local expected = {
+			{ text = "1e1000", exponent = 1, multiplicand = 1000 },
+			{ text = "ee100", exponent = 2, multiplicand = 100 },
+			{ text = "eee100", exponent = 3, multiplicand = 100 },
+			{ text = "eeee100", exponent = 4, multiplicand = 100 },
+		}
+		local previous
+
+		for _, case in ipairs(expected) do
+			local value = AlyaNum.fromString(case.text)
+			expect(value.sign):toBe(1)
+			expect(value.exponent):toBe(case.exponent)
+			expect(value.multiplicand):toBe(case.multiplicand)
+			if previous ~= nil then
+				expect(value):toBeGreaterThan(previous)
+			end
+			previous = value
+		end
+	end)
+
+	test("signs: unary preserves massive negative values", function()
+		for _, case in ipairs(cases) do
+			local negative = case.value:unary()
+			expect(negative.sign):toBe(-1)
+			expect(negative:abs()):toEqual(case.value)
+			expect(negative:unary()):toEqual(case.value)
+			expect(negative):toBeLessThan(case.value)
+		end
+	end)
+
+	test("parsing: accepts negative massive E notations", function()
+		local checks = {}
+		for index = 1, 4 do
+			local case = cases[index]
+			local value = case.value
+			checks[#checks + 1] = {
+				name = case.name,
+				run = function()
+					local negative = AlyaNum.fromString("-" .. value:toEChain())
+					expect(negative.sign):toBe(-1)
+					expect(negative:abs()):toEqual(value)
+				end,
+			}
+		end
+		assertAll(checks)
+	end)
+
+	test("arithmetic: massive values divide by themselves", function()
+		local checks = {}
+		for _, case in ipairs(cases) do
+			local value = case.value
+			local negative = value:unary()
+			checks[#checks + 1] = {
+				name = case.name,
+				run = function()
+					expect(value:div(value)):toEqual(ONE)
+					expect(negative:div(negative)):toEqual(ONE)
+					expect(value:div(negative)):toEqual(NEG_ONE)
+				end,
+			}
+		end
+		assertAll(checks)
+	end)
+
+	test("arithmetic: massive values cancel to zero", function()
+		local checks = {}
+		for _, case in ipairs(cases) do
+			local value = case.value
+			local negative = value:unary()
+			checks[#checks + 1] = {
+				name = case.name,
+				run = function()
+					expect(value:sub(value)):toEqual(ZERO)
+					expect(value:add(negative)):toEqual(ZERO)
+				end,
+			}
+		end
+		assertAll(checks)
+	end)
+
+	test("arithmetic: massive values have zero remainder with themselves", function()
+		local checks = {}
+		for _, case in ipairs(cases) do
+			local value = case.value
+			checks[#checks + 1] = {
+				name = case.name,
+				run = function()
+					expect(value:mod(value)):toEqual(ZERO)
+				end,
+			}
+		end
+		assertAll(checks)
+	end)
+
+	test("arithmetic: massive squares preserve intentional saturation", function()
+		local checks = {}
+		for index = 3, #cases do
+			local case = cases[index]
+			local value = case.value
+			checks[#checks + 1] = {
+				name = case.name,
+				run = function()
+					expect(value:mul(value)):toEqual(value)
+				end,
+			}
+		end
+		assertAll(checks)
+	end)
+
+	test("arithmetic: massive powers preserve intentional saturation", function()
+		local checks = {}
+		for index = 3, #cases do
+			local case = cases[index]
+			local value = case.value
+			checks[#checks + 1] = {
+				name = case.name,
+				run = function()
+					expect(value:pow(2)):toEqual(value)
+				end,
+			}
+		end
+		assertAll(checks)
+	end)
+
+	test("arithmetic: massive roots preserve intentional saturation", function()
+		local checks = {}
+		for index = 3, #cases do
+			local case = cases[index]
+			local value = case.value
+			checks[#checks + 1] = {
+				name = case.name,
+				run = function()
+					expect(value:root(2)):toEqual(value)
+				end,
+			}
+		end
+		assertAll(checks)
+	end)
+
+	test("comparison: massive magnitudes stay ordered", function()
+		for index = 2, #cases do
+			expect(cases[index].value):toBeGreaterThan(cases[index - 1].value)
+		end
+		for _, case in ipairs(cases) do
+			expect(case.value:compare(case.value)):toBe(0)
+			expect(case.value:compare(case.value:unary())):toBe(1)
+		end
+	end)
+
+	test("logarithms: E-chain levels round trip through log10", function()
+		local values = {
+			{ value = AlyaNum.fromScientific("1e1000"), logarithm = AlyaNum.new(1000) },
+			{ value = AlyaNum.fromString("ee100"), logarithm = AlyaNum.fromString("e100") },
+			{ value = AlyaNum.fromString("eee100"), logarithm = AlyaNum.fromString("ee100") },
+			{ value = AlyaNum.fromString("eeee100"), logarithm = AlyaNum.fromString("eee100") },
+		}
+
+		for _, case in ipairs(values) do
+			expect(case.value:log10()):toEqual(case.logarithm)
+			expect(10 ^ case.value:log10()):toEqual(case.value)
+		end
+	end)
+
+	test("conversion: massive base fields survive round trips", function()
+		for _, case in ipairs(cases) do
+			local value = case.value
+			local restored = AlyaNum.fromOmega({
+				value.sign,
+				{ value.multiplicand, value.exponent, value.tetrate, value.pentate, value.hexate, value.heptate },
+			})
+			expect(restored):toEqual(value)
+		end
+	end)
+
+	test("conversion: massive values report overflow to primitive numbers", function()
+		for _, case in ipairs(cases) do
+			expect(case.value:toNumber()):toBe(math.huge)
+		end
+	end)
+
+	test("conversion: hyperoperation values remain visible in direct formats", function()
+		local expected = {
+			{ value = cases[5].value, text = "E(0)100" },
+			{ value = cases[6].value, text = "E100#2" },
+			{ value = cases[7].value, text = "E100#2" },
+			{ value = cases[8].value, text = "E100#2" },
+		}
+
+		for _, case in ipairs(expected) do
+			expect(case.value:toScientific()):toBe(case.text)
+			expect(case.value:toSuffix()):toBe(case.text)
+		end
+	end)
+
+	test("formatting: massive values remain representable", function()
+		for _, case in ipairs(cases) do
+			expect(#case.value:toScientific()):toBeGreaterThan(0)
+			expect(#case.value:toString()):toBeGreaterThan(0)
+		end
+	end)
+end)
+
 describe("Boundary conditions", function()
 	test("edge: zero in various operations", function()
 		local zero = AlyaNum.new(0)

@@ -394,6 +394,10 @@ function add(self: AlyaNum, number: AlyaNum): AlyaNum
 		end
 	end
 
+	if self.sign ~= number.sign and absCompare(self, number) == 0 then
+		return ZERO
+	end
+
 	local minAbsNum, maxAbsNum = absMinmax(self, number)
 
 	if
@@ -494,9 +498,9 @@ function mul(self: AlyaNum, number: AlyaNum): AlyaNum
 		end
 	end
 
-	local maxNum = absMax(self, number)
+	local maxNum = absMax(abs(self), abs(number))
 	if absMoreThan(maxNum, MAX_MUL) then
-		return maxNum -- just dont bother
+		return self.sign == number.sign and maxNum or unary(maxNum) -- just dont bother
 	end
 
 	if self.exponent < 2 and number.exponent < 2 then
@@ -523,9 +527,13 @@ function div(self: AlyaNum, number: AlyaNum): AlyaNum
 		return self
 	end
 
-	local maxNum = absMax(self, number)
+	if absCompare(self, number) == 0 then
+		return AlyaNum.new(self.sign * number.sign)
+	end
+
+	local maxNum = absMax(abs(self), abs(number))
 	if absMoreThan(maxNum, MAX_MUL) then
-		return maxNum -- just dont bother
+		return self.sign == number.sign and maxNum or unary(maxNum) -- just dont bother
 	end
 
 	if self.exponent < 2 and number.exponent < 2 then
@@ -1533,7 +1541,16 @@ end
 --- @param self AlyaNum
 --- @returns number
 function toNumber(self: AlyaNum): number
-	if self.exponent >= 2 or (self.exponent == 1 and self.multiplicand > LOG10_FLOAT64_LIMIT) then
+	if self.sign == 0 then
+		return 0
+	elseif
+		self.heptate > 0
+		or self.hexate > 0
+		or self.pentate > 0
+		or self.tetrate > 0
+		or self.exponent >= 2
+		or (self.exponent == 1 and self.multiplicand > LOG10_FLOAT64_LIMIT)
+	then
 		return HUGE * self.sign
 	end
 	return self.exponent == 1 and math.pow(10, self.multiplicand) * self.sign or self.multiplicand * self.sign
@@ -1544,6 +1561,8 @@ function toSerika(self: AlyaNum): (number, number)
 	local exponent: number
 	if self.sign == 0 then
 		return 0, 0
+	elseif self.heptate > 0 or self.hexate > 0 or self.pentate > 0 or self.tetrate > 0 then
+		return 10, HUGE
 	end
 	if self.exponent == 0 then
 		mantissa = (self.multiplicand / math.pow(10, math.floor(math.log10(self.multiplicand)))) * self.sign
@@ -1680,7 +1699,7 @@ end
 --- @param self AlyaNum
 --- @returns string
 function toSuffix(self: AlyaNum): string
-	if self.exponent > 1 then
+	if self.tetrate > 0 or self.pentate > 0 or self.hexate > 0 or self.heptate > 0 or self.exponent > 1 then
 		return toScientific(self)
 	end
 	local mantissa, exponent = toSerika(self)
@@ -1695,7 +1714,7 @@ function toScientific(self: AlyaNum): string
 		return "0"
 	elseif self.sign == -1 then
 		return "-" .. toScientific(abs(self))
-	elseif self.exponent > 2 then
+	elseif self.heptate > 0 or self.hexate > 0 or self.pentate > 0 or self.tetrate > 0 or self.exponent > 2 then
 		return toEChain(self)
 	end
 
@@ -1712,7 +1731,7 @@ function toEChain(self: AlyaNum): string
 	if self.sign == -1 then
 		return "-" .. toEChain(abs(self))
 	end
-	if self.tetrate > 0 or self.exponent > 10 then
+	if self.heptate > 0 or self.hexate > 0 or self.pentate > 0 or self.tetrate > 0 or self.exponent > 10 then
 		return toEnt(self)
 	end
 	return string.rep("e", self.exponent) .. tostring(math.floor(self.multiplicand * DP_OFFSET) / DP_OFFSET)
@@ -1724,9 +1743,20 @@ end
 --- @param self AlyaNum
 --- @returns string
 function toEnt(self: AlyaNum): string
+	if self.heptate > 0 or self.hexate > 0 or self.pentate > 0 then
+		return toHyperE(self)
+	end
+
 	local multiplicand = self.multiplicand
 	if self.tetrate > 0 then
-		if self.tetrate > 1 or multiplicand > 308 or self.exponent > 1 then
+		if
+			self.heptate > 0
+			or self.hexate > 0
+			or self.pentate > 0
+			or self.tetrate > 1
+			or multiplicand > 308
+			or self.exponent > 1
+		then
 			return toHyperE(self)
 		end
 		multiplicand = math.pow(10, multiplicand)
@@ -1899,7 +1929,12 @@ function AlyaNum.fromString(str): AlyaNum
 			-- its scientific yk
 			local sign = 1
 
-			local mantissa = tonumber(subs[1])
+			local mantissaText = subs[1]
+			if mantissaText == "-" then
+				mantissaText = "1"
+				sign = -1
+			end
+			local mantissa = tonumber(mantissaText)
 			local exponent = tonumber(subs[2]) or 0
 			if mantissa == 0 then
 				return ZERO
