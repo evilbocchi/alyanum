@@ -30,6 +30,10 @@ jobs:
       - name: Run tests
         run: |
           npm run test
+
+      - name: Run benchmarks
+        run: |
+          npm run bench
   release:
     needs: test
     if: startsWith(github.ref, 'refs/tags/v')
