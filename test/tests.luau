@@ -319,6 +319,32 @@ describe("String conversion", function()
 	end)
 end)
 
+describe("Leaderboard serialization", function()
+	test("toSingle: preserves tetrate mode bands", function()
+		local modeSix = AlyaNum.new({
+			sign = 1,
+			multiplicand = 2,
+			exponent = 3,
+			tetrate = 1,
+			pentate = 0,
+			hexate = 0,
+			heptate = 0,
+		})
+		local modeSeven = AlyaNum.new({
+			sign = 1,
+			multiplicand = 2,
+			exponent = 3,
+			tetrate = 2,
+			pentate = 0,
+			hexate = 0,
+			heptate = 0,
+		})
+
+		expect(math.floor(modeSix:toSingle() / 1e16)):toBe(6)
+		expect(math.floor(modeSeven:toSingle() / 1e16)):toBe(7)
+	end)
+end)
+
 describe("Edge cases", function()
 	test("zero: addition", function()
 		local a = AlyaNum.new(0)

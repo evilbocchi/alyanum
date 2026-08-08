@@ -1776,13 +1776,7 @@ function AlyaNum.lbencode(self: AlyaNum): number
 		cnum += math.log10((self.pentate + (math.log10(self.tetrate + 1) / 16) + 1)) * 6.26775e14
 		return sign * cnum
 	elseif self.tetrate > 0 then
-		if self.tetrate < 9999 then
-			-- mode 8: Pentation Empire
-			local cnum = 8e16
-			cnum += math.log10((self.exponent + (math.log10(self.multiplicand) / 16) + 1)) * 6.26775e8
-			cnum += self.tetrate * 1e10
-			return sign * cnum
-		elseif self.tetrate == 2 then
+		if self.tetrate == 2 then
 			-- mode 7: Post-EternityNum
 			local cnum = 7e16
 			cnum += math.log10((self.exponent + (math.log10(self.multiplicand) / 16) + 1)) * 6.26775e14
@@ -1791,6 +1785,12 @@ function AlyaNum.lbencode(self: AlyaNum): number
 			-- mode 6: Beyond EternityNum
 			local cnum = 6e16
 			cnum += math.log10((self.exponent + (math.log10(self.multiplicand) / 16) + 1)) * 6.26775e14
+			return sign * cnum
+		elseif self.tetrate < 9999 then
+			-- mode 8: Pentation Empire
+			local cnum = 8e16
+			cnum += math.log10((self.exponent + (math.log10(self.multiplicand) / 16) + 1)) * 6.26775e8
+			cnum += self.tetrate * 1e10
 			return sign * cnum
 		end
 		-- mode 9: Ultra Pentation
