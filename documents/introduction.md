@@ -40,7 +40,7 @@ print(number) -- 505
 ### TypeScript Example
 
 ```ts
-import AlyaNum from "@antivivi/AlyaNum";
+import AlyaNum from "@rbxts/alyanum";
 
 let number = new AlyaNum(5); // Create a new AlyaNum representing 5
 print(number); // 5
