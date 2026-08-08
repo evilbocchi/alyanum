@@ -64,6 +64,11 @@ interface AlyaNum extends BaseAlyaNum {
      */
     pow(number: Number): AlyaNum;
     /**
+     * Returns the factorial of this non-negative integer AlyaNum.
+     * Large inputs use a logarithmic Stirling approximation.
+     */
+    factorial(): AlyaNum;
+    /**
      * Returns the remainder after dividing this AlyaNum by the specified number.
      * @param number The divisor.
      */
@@ -80,6 +85,18 @@ interface AlyaNum extends BaseAlyaNum {
      * @returns True if the numbers are equal, false otherwise.
      */
     equals(number: Number): boolean;
+    /**
+     * Checks if this AlyaNum is approximately equal to the specified number.
+     * @param number The number to compare against.
+     * @param relativeTolerance Maximum relative difference. Defaults to `1e-9`.
+     * @param absoluteTolerance Maximum absolute difference. Defaults to `0`.
+     * @returns True if the numbers are close, false otherwise.
+     */
+    isCloseTo(
+        number: Number,
+        relativeTolerance?: number,
+        absoluteTolerance?: Number,
+    ): boolean;
     /**
      * Checks if this AlyaNum is less than the specified number.
      * @param number The number to compare against.

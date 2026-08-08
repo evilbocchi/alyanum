@@ -105,6 +105,38 @@ describe("Arithmetic", function()
 		local a = AlyaNum.new(4)
 		expect(a:reciprocal():toNumber()):toBeCloseTo(0.25, 9)
 	end)
+
+	test("factorial: handles exact small values and aliases", function()
+		expect(AlyaNum.new(0):factorial()):toEqual(AlyaNum.new(1))
+		expect(AlyaNum.new(5):factorial()):toEqual(AlyaNum.new(120))
+	end)
+
+	test("factorial: uses Stirling approximation beyond float64 factorials", function()
+		local mantissa, exponent = AlyaNum.new(1000):factorial():toSerika()
+
+		expect(mantissa):toBeCloseTo(4.0238726, 6)
+		expect(exponent):toBe(2567)
+	end)
+
+	test("factorial: supports very large integer inputs", function()
+		local result = AlyaNum.fromScientific("1e1000"):factorial()
+
+		expect(result.sign):toBe(1)
+		expect(result.exponent):toBe(2)
+		expect(result.multiplicand):toBeGreaterThan(1000)
+	end)
+
+	test("factorial: rejects negative and fractional values", function()
+		local negativeOk = pcall(function()
+			return AlyaNum.new(-1):factorial()
+		end)
+		local fractionalOk = pcall(function()
+			return AlyaNum.new(3.5):factorial()
+		end)
+
+		expect(negativeOk):toBe(false)
+		expect(fractionalOk):toBe(false)
+	end)
 end)
 
 describe("Negative numbers", function()
@@ -264,6 +296,50 @@ describe("Comparison", function()
 		local a = AlyaNum.new(123)
 		local b = AlyaNum.new(123)
 		expect(a:eq(b)):toBe(true)
+	end)
+
+	test("isCloseTo: compares relative difference", function()
+		local a = AlyaNum.new(1000)
+		local b = AlyaNum.new(1000.0005)
+
+		expect(a:isCloseTo(b, 1e-6)):toBe(true)
+		expect(a:isCloseTo(b, 1e-7)):toBe(false)
+	end)
+
+	test("isCloseTo: compares values beyond float64 range", function()
+		local a = AlyaNum.new({
+			sign = 1,
+			multiplicand = 100,
+			exponent = 2,
+			tetrate = 0,
+			pentate = 0,
+			hexate = 0,
+			heptate = 0,
+		})
+		local b = AlyaNum.new({
+			sign = 1,
+			multiplicand = 101,
+			exponent = 2,
+			tetrate = 0,
+			pentate = 0,
+			hexate = 0,
+			heptate = 0,
+		})
+
+		expect(a:isCloseTo(a)):toBe(true)
+		expect(a:isCloseTo(b)):toBe(false)
+	end)
+
+	test("isCloseTo: supports absolute tolerance near zero", function()
+		local a = AlyaNum.new(0)
+
+		expect(a:isCloseTo(1e-6, 0, 1e-5)):toBe(true)
+		expect(a:isCloseTo(1e-6, 0, 1e-7)):toBe(false)
+	end)
+
+	test("isCloseTo: does not treat opposite signs as relatively close", function()
+		expect(AlyaNum.new(-5):isCloseTo(-5.000001, 1e-6)):toBe(true)
+		expect(AlyaNum.new(-5):isCloseTo(5, 100)):toBe(false)
 	end)
 
 	test("lessThan: true", function()

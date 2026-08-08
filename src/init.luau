@@ -140,6 +140,7 @@ local suffixes = {
 	},
 }
 local DP_OFFSET = math.pow(10, DECIMAL_POINTS)
+local DEFAULT_RELATIVE_TOLERANCE = 1e-9
 
 --- The base version of an AlyaNum object, stripped of its metatables and metamethods.
 --- This type commonly appears when sending AlyaNum objects over the client-server boundary or saving it in datastores.
@@ -280,6 +281,14 @@ local ERECIPE = AlyaNum.new(math.exp(1 / math.exp(1)))
 local E308 = AlyaNum.new(1e308)
 local LAMBERTW_TOL = 1e-10
 local H_LAMBERTW_TOL = AlyaNum.new(LAMBERTW_TOL)
+local FACTORIAL_EXACT_LIMIT = AlyaNum.new(170)
+local FACTORIAL_CORRECTION_LIMIT = AlyaNum.new(1000000)
+local HALF = AlyaNum.new(0.5)
+local LOG10_E = AlyaNum.new(math.log10(math.exp(1)))
+local LOG10_SQRT_TWO_PI = AlyaNum.new(math.log10(math.sqrt(2 * math.pi)))
+local STIRLING_C1 = AlyaNum.new(1 / (12 * math.log(10)))
+local STIRLING_C3 = AlyaNum.new(1 / (360 * math.log(10)))
+local STIRLING_C5 = AlyaNum.new(1 / (1260 * math.log(10)))
 local MAX_SAFE = AlyaNum.new(FLOAT64_SAFE_LIMIT)
 local MAX_ALLOWED = AlyaNum.new(FLOAT64_LIMIT)
 local MAX_ADD = AlyaNum.new({
@@ -748,6 +757,42 @@ function isInteger(self: AlyaNum): boolean
 		return true
 	end
 	return math.fmod(toNumber(self), 1) == 0
+end
+
+--- Returns the factorial of a non-negative integer AlyaNum.
+--- Uses exact multiplication through 170!, then evaluates Stirling's expansion in log10 space.
+--- @returns AlyaNum
+function factorial(self: AlyaNum): AlyaNum
+	if self.sign == -1 then
+		error("factorial is undefined for negative numbers")
+	elseif not isInteger(self) then
+		error("factorial requires a non-negative integer")
+	elseif self.sign == 0 or equalsOne(self) then
+		return ONE
+	elseif lessEquals(self, FACTORIAL_EXACT_LIMIT) then
+		local result = ONE
+		for i = 2, toNumber(self) do
+			result = mul(result, AlyaNum.new(i))
+		end
+		return result
+	end
+
+	local logN = log10(self)
+	local logFactorial = mul(self, add(logN, unary(LOG10_E)))
+	logFactorial = add(logFactorial, mul(HALF, logN))
+	logFactorial = add(logFactorial, LOG10_SQRT_TWO_PI)
+
+	if lessEquals(self, FACTORIAL_CORRECTION_LIMIT) then
+		local inverseN = div(ONE, self)
+		local inverseNSquared = mul(inverseN, inverseN)
+		local inverseNCubed = mul(inverseNSquared, inverseN)
+		local inverseNFifth = mul(mul(inverseNCubed, inverseNSquared), ONE)
+		logFactorial = add(logFactorial, mul(inverseN, STIRLING_C1))
+		logFactorial = add(logFactorial, unary(mul(inverseNCubed, STIRLING_C3)))
+		logFactorial = add(logFactorial, mul(inverseNFifth, STIRLING_C5))
+	end
+
+	return mutablePow10(logFactorial)
 end
 
 --- Returns 1/AlyaNum.
@@ -1388,6 +1433,62 @@ function abs(self: AlyaNum): AlyaNum
 		hexate = self.hexate,
 		heptate = self.heptate,
 	}, AlyaNum)
+end
+
+--- Checks if this AlyaNum is approximately equal to the specified number.
+--- Relative tolerance is used for nonzero values, while absolute tolerance is
+--- also checked to support values near zero and values with opposite signs.
+--- @param self AlyaNum
+--- @param number AlyaNum
+--- @param relativeTolerance Maximum relative difference. Defaults to 1e-9.
+--- @param absoluteTolerance Maximum absolute difference. Defaults to 0.
+--- @returns boolean
+function isCloseTo(self: AlyaNum, number: AlyaNum, relativeTolerance: number?, absoluteTolerance: Number?): boolean
+	local relativeLimit = relativeTolerance or DEFAULT_RELATIVE_TOLERANCE
+	if relativeLimit < 0 or relativeLimit >= HUGE or relativeLimit ~= relativeLimit then
+		error("relative tolerance must be a finite non-negative number")
+	end
+
+	local absoluteLimit = AlyaNum.new(absoluteTolerance or 0)
+	if absoluteLimit.sign == -1 then
+		error("absolute tolerance must be non-negative")
+	end
+
+	if equals(self, number) then
+		return true
+	end
+
+	if absoluteLimit.sign ~= 0 then
+		local difference = abs(add(self, unary(number)))
+		if lessEquals(difference, absoluteLimit) then
+			return true
+		end
+	end
+
+	if self.sign == 0 or number.sign == 0 or self.sign ~= number.sign then
+		return false
+	end
+
+	local selfMagnitude = abs(self)
+	local numberMagnitude = abs(number)
+	local maxMagnitude = absMax(selfMagnitude, numberMagnitude)
+	local relativeNumber = AlyaNum.new(relativeLimit)
+
+	if
+		maxMagnitude.exponent <= 1
+		and maxMagnitude.tetrate == 0
+		and maxMagnitude.pentate == 0
+		and maxMagnitude.hexate == 0
+		and maxMagnitude.heptate == 0
+	then
+		local difference = abs(add(self, unary(number)))
+		return lessEquals(difference, mul(maxMagnitude, relativeNumber))
+	end
+
+	local minMagnitude = absMinmax(selfMagnitude, numberMagnitude)
+	local logarithmicDifference = abs(add(log10(maxMagnitude), unary(log10(minMagnitude))))
+	local logarithmicTolerance = AlyaNum.new(math.log10(1 + relativeLimit))
+	return lessEquals(logarithmicDifference, logarithmicTolerance)
 end
 
 -- number type conversion utils
@@ -2165,6 +2266,14 @@ AlyaNum.equals = function(self: AlyaNum, number: Number)
 	return equals(AlyaNum.new(self), AlyaNum.new(number))
 end
 
+--- Checks if this AlyaNum is approximately equal to the specified number.
+--- @param number The number to compare against.
+--- @param relativeTolerance Maximum relative difference. Defaults to 1e-9.
+--- @param absoluteTolerance Maximum absolute difference. Defaults to 0.
+AlyaNum.isCloseTo = function(self: AlyaNum, number: Number, relativeTolerance: number?, absoluteTolerance: Number?)
+	return isCloseTo(AlyaNum.new(self), AlyaNum.new(number), relativeTolerance, absoluteTolerance)
+end
+
 --- Checks if this AlyaNum is less than the specified number.
 --- @param number The number to compare against.
 AlyaNum.lessThan = function(self: AlyaNum, number: Number)
@@ -2233,6 +2342,11 @@ end
 --- This operation is unsafe for numbers beyond 2^1024.
 AlyaNum.isInteger = function(self: AlyaNum)
 	return isInteger(AlyaNum.new(self))
+end
+
+--- Returns the factorial of a non-negative integer AlyaNum.
+AlyaNum.factorial = function(self: AlyaNum)
+	return factorial(AlyaNum.new(self))
 end
 
 --- Returns 1/AlyaNum.
