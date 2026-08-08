@@ -1515,9 +1515,12 @@ function AlyaNum.fromOnoe(onoeNum: any): AlyaNum
 	if onoeNum.sign ~= nil then -- is an onoenum
 		number = onoeNum :: BaseAlyaNum
 	else -- probably already converted
+		if onoeNum.mantissa == 0 then
+			return ZERO
+		end
 		number = {
 			sign = math.sign(onoeNum.mantissa),
-			multiplicand = math.log10(onoeNum.mantissa) + onoeNum.exponent,
+			multiplicand = math.log10(math.abs(onoeNum.mantissa)) + onoeNum.exponent,
 			exponent = 1,
 			tetrate = 0,
 			pentate = 0,

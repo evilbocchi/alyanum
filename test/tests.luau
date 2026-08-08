@@ -1851,3 +1851,404 @@ describe("Public API coverage", function()
 		expect(negativeOk):toBe(false)
 	end)
 end)
+
+describe("Additional mathematical properties", function()
+	local function expectClose(actual: AlyaNumber, expected: number, precision: number?)
+		expect(actual:toNumber()):toBeCloseTo(expected, precision or 9)
+	end
+
+	test("closeness is symmetric", function()
+		local left = AlyaNum.new(100)
+		local right = AlyaNum.new(100.001)
+		expect(left:isCloseTo(right, 1e-4)):toBe(true)
+		expect(right:isCloseTo(left, 1e-4)):toBe(true)
+	end)
+
+	test("zero tolerance still accepts exact values", function()
+		expect(AlyaNum.new(42):isCloseTo(42, 0)):toBe(true)
+	end)
+
+	test("larger relative tolerance accepts a larger difference", function()
+		local value = AlyaNum.new(100)
+		expect(value:isCloseTo(100.5, 0.01)):toBe(true)
+		expect(value:isCloseTo(100.5, 0.001)):toBe(false)
+	end)
+
+	test("absolute tolerance accepts its upper boundary", function()
+		expect(AlyaNum.new(10):isCloseTo(10.25, 0, 0.25)):toBe(true)
+	end)
+
+	test("absolute tolerance rejects a smaller limit", function()
+		expect(AlyaNum.new(10):isCloseTo(10.25, 0, 0.24)):toBe(false)
+	end)
+
+	test("negative relative tolerance is invalid", function()
+		local ok = pcall(function()
+			return AlyaNum.new(1):isCloseTo(1, -1)
+		end)
+		expect(ok):toBe(false)
+	end)
+
+	test("negative absolute tolerance is invalid", function()
+		local ok = pcall(function()
+			return AlyaNum.new(1):isCloseTo(1, 0, -1)
+		end)
+		expect(ok):toBe(false)
+	end)
+
+	test("infinite relative tolerance is invalid", function()
+		local ok = pcall(function()
+			return AlyaNum.new(1):isCloseTo(1, math.huge)
+		end)
+		expect(ok):toBe(false)
+	end)
+
+	test("reciprocal is an involution for positive values", function()
+		expectClose(AlyaNum.new(8):reciprocal():reciprocal(), 8)
+	end)
+
+	test("reciprocal is an involution for negative values", function()
+		expectClose(AlyaNum.new(-8):reciprocal():reciprocal(), -8)
+	end)
+
+	test("reciprocal preserves the sign flip", function()
+		expectClose(AlyaNum.new(-8):reciprocal(), -0.125)
+	end)
+
+	test("reciprocal multiplies to one", function()
+		expectClose(AlyaNum.new(13):mul(AlyaNum.new(13):reciprocal()), 1)
+	end)
+
+	test("reciprocal distributes over products", function()
+		local left = AlyaNum.new(6):mul(5):reciprocal()
+		local right = AlyaNum.new(6):reciprocal():mul(AlyaNum.new(5):reciprocal())
+		expectClose(left, right:toNumber())
+	end)
+
+	test("square roots compose", function()
+		expectClose(AlyaNum.new(256):root(2):root(2), 4)
+	end)
+
+	test("roots distribute over reciprocals", function()
+		local left = AlyaNum.new(81):reciprocal():root(4)
+		local right = AlyaNum.new(81):root(4):reciprocal()
+		expectClose(left, right:toNumber())
+	end)
+
+	test("roots distribute over products of perfect powers", function()
+		local left = AlyaNum.new(16):mul(81):root(2)
+		local right = AlyaNum.new(16):root(2):mul(AlyaNum.new(81):root(2))
+		expectClose(left, right:toNumber())
+	end)
+
+	test("root preserves order for positive radicands", function()
+		expect(AlyaNum.new(16):root(2)):toBeLessThan(AlyaNum.new(81):root(2))
+	end)
+
+	test("toNumber preserves a positive decimal", function()
+		expect(AlyaNum.new(123.75):toNumber()):toBe(123.75)
+	end)
+
+	test("toNumber preserves a negative decimal", function()
+		expect(AlyaNum.new(-123.75):toNumber()):toBe(-123.75)
+	end)
+
+	test("toNumber preserves a very small value", function()
+		expect(AlyaNum.new(1e-200):toNumber()):toBeCloseTo(1e-200, 9)
+	end)
+
+	test("toNumber reports positive overflow", function()
+		expect(AlyaNum.fromScientific("1e1000"):toNumber()):toBe(math.huge)
+	end)
+
+	test("toNumber reports negative overflow", function()
+		expect(AlyaNum.fromScientific("-1e1000"):toNumber()):toBe(-math.huge)
+	end)
+
+	test("toSerika maps zero to zero fields", function()
+		local mantissa, exponent = AlyaNum.new(0):toSerika()
+		expect(mantissa):toBe(0)
+		expect(exponent):toBe(0)
+	end)
+
+	test("toSerika normalizes a positive mantissa", function()
+		local mantissa, exponent = AlyaNum.new(98765):toSerika()
+		expect(mantissa):toBeCloseTo(9.8765, 9)
+		expect(exponent):toBe(4)
+	end)
+
+	test("toSerika reconstructs its source value", function()
+		local value = AlyaNum.new(98765)
+		local mantissa, exponent = value:toSerika()
+		expect(mantissa * 10 ^ exponent):toBeCloseTo(value:toNumber(), 9)
+	end)
+
+	test("toSerika carries a negative sign in its mantissa", function()
+		local mantissa, exponent = AlyaNum.new(-2500):toSerika()
+		expect(mantissa):toBeCloseTo(-2.5, 9)
+		expect(exponent):toBe(3)
+	end)
+
+	test("fromOnoe reconstructs a positive mantissa and exponent", function()
+		expectClose(AlyaNum.fromOnoe({ mantissa = 2.5, exponent = 3 }), 2500)
+	end)
+
+	test("fromOnoe preserves raw high-level fields", function()
+		local value = AlyaNum.fromOnoe({
+			sign = 1,
+			multiplicand = 8,
+			exponent = 0,
+			tetrate = 1,
+			pentate = 0,
+			hexate = 0,
+			heptate = 0,
+		})
+		expect(value.sign):toBe(1)
+		expect(value.multiplicand):toBe(8)
+		expect(value.exponent):toBe(0)
+		expect(value.tetrate):toBe(1)
+	end)
+
+	test("fromOmega defaults omitted lower fields", function()
+		local value = AlyaNum.fromOmega({ 1, { 5 } })
+		expect(value):toEqual(AlyaNum.new(5))
+	end)
+
+	test("fromOmega preserves a negative tuple sign", function()
+		expectClose(AlyaNum.fromOmega({ -1, { 5, 0, 0, 0, 0, 0 } }), -5)
+	end)
+
+	test("fix canonicalizes every zero field", function()
+		local value = AlyaNum.fix({
+			sign = 0,
+			multiplicand = 4,
+			exponent = 2,
+			tetrate = 3,
+			pentate = 4,
+			hexate = 5,
+			heptate = 6,
+		})
+		expect(value):toEqual(AlyaNum.new(0))
+	end)
+
+	test("fix moves a negative multiplicand into the sign", function()
+		local value = AlyaNum.fix({
+			sign = 1,
+			multiplicand = -4,
+			exponent = 0,
+			tetrate = 0,
+			pentate = 0,
+			hexate = 0,
+			heptate = 0,
+		})
+		expect(value.sign):toBe(-1)
+		expect(value.multiplicand):toBe(4)
+	end)
+
+	test("fromString scales the K suffix exactly", function()
+		expect(AlyaNum.fromString("2K"):toNumber()):toBeCloseTo(2000, 9)
+	end)
+
+	test("fromString scales the M suffix exactly", function()
+		expect(AlyaNum.fromString("3M"):toNumber()):toBeCloseTo(3000000, 9)
+	end)
+
+	test("fromString scales the B suffix exactly", function()
+		expect(AlyaNum.fromString("4B"):toNumber()):toBeCloseTo(4000000000, 5)
+	end)
+
+	test("fromString preserves a suffix sign", function()
+		expect(AlyaNum.fromString("-4K"):toNumber()):toBeCloseTo(-4000, 9)
+	end)
+
+	test("toSuffix formats one thousand canonically", function()
+		expect(AlyaNum.new(1000):toSuffix()):toBe("1K")
+	end)
+
+	test("toSuffix formats one million canonically", function()
+		expect(AlyaNum.new(1000000):toSuffix()):toBe("1M")
+	end)
+
+	test("scientific formatting round trips a power of ten", function()
+		local value = AlyaNum.new(1000000)
+		expect(AlyaNum.fromScientific(value:toScientific())):toEqual(value)
+	end)
+
+	test("E-chain formatting round trips a two-level value", function()
+		local value = AlyaNum.fromString("ee2")
+		expect(AlyaNum.fromString(value:toEChain())):toEqual(value)
+	end)
+
+	test("leaderboard encoding is odd with respect to sign", function()
+		local value = AlyaNum.new(2.5)
+		expect(value:lbencode()):toBe(-value:unary():lbencode())
+	end)
+
+	test("leaderboard encoding preserves positive order", function()
+		expect(AlyaNum.new(2):lbencode()):toBeLessThan(AlyaNum.new(200):lbencode())
+	end)
+
+	test("toSingle is the leaderboard encoding alias", function()
+		local value = AlyaNum.new(37.5)
+		expect(value:toSingle()):toBe(value:lbencode())
+	end)
+
+	test("fromSingle is the leaderboard decoding alias", function()
+		local value = AlyaNum.new(37.5)
+		expect(AlyaNum.fromSingle(value:toSingle())):toEqual(AlyaNum.lbdecode(value:lbencode()))
+	end)
+
+	test("leaderboard round trips a positive decimal", function()
+		local value = AlyaNum.new(2.5)
+		expectClose(AlyaNum.lbdecode(value:lbencode()), 2.5, 8)
+	end)
+
+	test("leaderboard round trips a negative decimal", function()
+		local value = AlyaNum.new(-2.5)
+		expectClose(AlyaNum.lbdecode(value:lbencode()), -2.5, 8)
+	end)
+
+	test("Lambert W maps zero to zero", function()
+		expect(AlyaNum.new(0):lambertw()):toEqual(AlyaNum.new(0))
+	end)
+
+	test("Lambert W at one has its principal value", function()
+		expectClose(AlyaNum.new(1):lambertw(), 0.5671432904, 8)
+	end)
+
+	test("Lambert W satisfies its defining equation at one", function()
+		local value = AlyaNum.new(1)
+		local result = value:lambertw()
+		expectClose(result:mul(math.exp(result:toNumber())), 1, 8)
+	end)
+
+	test("Lambert W satisfies its defining equation at ten", function()
+		local value = AlyaNum.new(10)
+		local result = value:lambertw()
+		expectClose(result:mul(math.exp(result:toNumber())), 10, 8)
+	end)
+
+	test("Lambert W is increasing on positive inputs", function()
+		expect(AlyaNum.new(1):lambertw()):toBeLessThan(AlyaNum.new(10):lambertw())
+	end)
+
+	test("Lambert W satisfies its defining equation on a negative input", function()
+		local value = AlyaNum.new(-0.1)
+		local result = value:lambertw()
+		expectClose(result:mul(math.exp(result:toNumber())), -0.1, 8)
+	end)
+
+	test("slog inverts tetration at height two", function()
+		expect(AlyaNum.new(2):tet(2):slog(2)):toEqual(AlyaNum.new(2))
+	end)
+
+	test("slog inverts tetration at height three", function()
+		expect(AlyaNum.new(2):tet(3):slog(2)):toEqual(AlyaNum.new(3))
+	end)
+
+	test("slog inverts tetration for base three", function()
+		expect(AlyaNum.new(3):tet(2):slog(3)):toEqual(AlyaNum.new(2))
+	end)
+
+	test("pentlog inverts pentation at height two", function()
+		expect(AlyaNum.new(2):pent(2):pentlog(2)):toEqual(AlyaNum.new(2))
+	end)
+
+	test("pentlog inverts pentation for base three", function()
+		expect(AlyaNum.new(3):pent(2):pentlog(3)):toEqual(AlyaNum.new(2))
+	end)
+
+	test("hextlog inverts hexation at height two", function()
+		expect(AlyaNum.new(2):hext(2):hextlog(2)):toEqual(AlyaNum.new(2))
+	end)
+
+	test("tetration has a zero-height identity", function()
+		expect(AlyaNum.new(7):tet(0)):toEqual(AlyaNum.new(1))
+	end)
+
+	test("pentation has a zero-height identity", function()
+		expect(AlyaNum.new(7):pent(0)):toEqual(AlyaNum.new(1))
+	end)
+
+	test("hexation has a zero-height identity", function()
+		expect(AlyaNum.new(7):hext(0)):toEqual(AlyaNum.new(1))
+	end)
+
+	test("floor negation matches negated ceil", function()
+		local value = AlyaNum.new(7.25)
+		expect(value:unary():floor()):toEqual(value:ceil():unary())
+	end)
+
+	test("ceil negation matches negated floor", function()
+		local value = AlyaNum.new(7.25)
+		expect(value:unary():ceil()):toEqual(value:floor():unary())
+	end)
+
+	test("rounding is odd away from half boundaries", function()
+		local value = AlyaNum.new(7.25)
+		expect(value:unary():round()):toEqual(value:round():unary())
+	end)
+
+	test("floor commutes with integer translation", function()
+		local value = AlyaNum.new(7.25)
+		expect(value:add(3):floor()):toEqual(value:floor():add(3))
+	end)
+
+	test("ceil commutes with integer translation", function()
+		local value = AlyaNum.new(-7.25)
+		expect(value:add(3):ceil()):toEqual(value:ceil():add(3))
+	end)
+
+	test("floor and ceil differ by one for nonintegers", function()
+		local value = AlyaNum.new(-7.25)
+		expect(value:floor():add(1)):toEqual(value:ceil())
+	end)
+
+	test("round lies between floor and ceil", function()
+		local value = AlyaNum.new(7.75)
+		expect(value:round()):toBeGreaterThanOrEqual(value:floor())
+		expect(value:round()):toBeLessThanOrEqual(value:ceil())
+	end)
+
+	test("integer status agrees with equal floor and ceil", function()
+		local value = AlyaNum.new(-18)
+		expect(value:isInteger()):toBe(value:floor():equals(value:ceil()))
+	end)
+
+	test("fractional status disagrees with equal floor and ceil", function()
+		local value = AlyaNum.new(-18.25)
+		expect(value:isInteger()):toBe(value:floor():equals(value:ceil()))
+	end)
+
+	test("factorial quotients recover their integer", function()
+		expect(AlyaNum.new(10):factorial():div(AlyaNum.new(9):factorial())):toEqual(AlyaNum.new(10))
+	end)
+
+	test("factorial remains integral at ten", function()
+		expect(AlyaNum.new(10):factorial():isInteger()):toBe(true)
+	end)
+
+	test("factorial order follows integer order", function()
+		expect(AlyaNum.new(10):factorial()):toBeGreaterThan(AlyaNum.new(9):factorial())
+	end)
+
+	test("the googol exceeds every smaller power of ten", function()
+		expect(AlyaNum.GOOGOL):toBeGreaterThan(AlyaNum.new(10):pow(99))
+	end)
+
+	test("the googolplex exceeds the googol", function()
+		expect(AlyaNum.GOOGOLPLEX):toBeGreaterThan(AlyaNum.GOOGOL)
+	end)
+
+	test("the googolplex is ten raised to the googol", function()
+		expect(AlyaNum.GOOGOLPLEX):toEqual(AlyaNum.new(10):pow(AlyaNum.GOOGOL))
+	end)
+
+	test("Graham's first term exceeds tritri", function()
+		expect(AlyaNum.GRAHAM1):toBeGreaterThan(AlyaNum.TRITRI)
+	end)
+
+	test("tritet exceeds Graham's first term", function()
+		expect(AlyaNum.TRITET):toBeGreaterThan(AlyaNum.GRAHAM1)
+	end)
+end)
