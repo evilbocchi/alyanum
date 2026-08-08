@@ -303,7 +303,7 @@ interface AlyaNumConstructor {
      * Create a new AlyaNum object from a primitive number.
      * @param val Primitive number or a table containing mantissa and exponent entries
      */
-    new(val: Number): AlyaNum;
+    new (val: Number): AlyaNum;
 
     /**
      * Create a new AlyaNum object from a BaseOnoeNum. This function is mainly
@@ -312,7 +312,7 @@ interface AlyaNumConstructor {
      * @param onoeNum Object to migrate from. Will automatically detect when the object is already migrated
      * @returns Resulting AlyaNum object
      */
-    fromOnoe: (onoeNum: { mantissa: number; exponent: number; }) => AlyaNum;
+    fromOnoe: (onoeNum: { mantissa: number; exponent: number }) => AlyaNum;
 
     /**
      * Create a new AlyaNum object from an OmegaNum. This function is mainly
