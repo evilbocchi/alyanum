@@ -7,6 +7,7 @@
         "prepare": "rokit install --no-trust-check",
         "build": "rbxtsc && lune run release.luau",
         "lint": "rk luau-lsp analyze --flag:LuauSolverV2=true --platform=standard src",
+        "bench": "lune run bench",
         "format": "prettier --write . && rk StyLua src test",
         "test": "lune run test",
         "watch": "rbxtsc -w",
