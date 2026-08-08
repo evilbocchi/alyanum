@@ -4,7 +4,7 @@
 
 -- Benchmark tests for AlyaNum vs number and EternityNum performance
 
-local AlyaNum = require("./AlyaNum")
+local AlyaNum = require("./src")
 local EternityNum = require("./bench/EternityNum")
 
 -- Benchmark configuration
