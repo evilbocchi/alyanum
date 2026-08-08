@@ -2252,3 +2252,481 @@ describe("Additional mathematical properties", function()
 		expect(AlyaNum.TRITET):toBeGreaterThan(AlyaNum.GRAHAM1)
 	end)
 end)
+
+describe("Object immutability", function()
+	local function snapshot(value: AlyaNumber): AlyaNumber
+		return AlyaNum.new({
+			sign = value.sign,
+			multiplicand = value.multiplicand,
+			exponent = value.exponent,
+			tetrate = value.tetrate,
+			pentate = value.pentate,
+			hexate = value.hexate,
+			heptate = value.heptate,
+		})
+	end
+
+	local function expectUnchanged(value: AlyaNumber, before: AlyaNumber)
+		expect(value):toEqual(before)
+	end
+
+	test("addition preserves its left operand", function()
+		local value = AlyaNum.new(123)
+		local before = snapshot(value)
+		value:add(45)
+		expectUnchanged(value, before)
+	end)
+
+	test("addition preserves its right operand", function()
+		local value = AlyaNum.new(45)
+		local before = snapshot(value)
+		AlyaNum.new(123):add(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("subtraction preserves its left operand", function()
+		local value = AlyaNum.new(123)
+		local before = snapshot(value)
+		value:sub(45)
+		expectUnchanged(value, before)
+	end)
+
+	test("subtraction preserves its right operand", function()
+		local value = AlyaNum.new(45)
+		local before = snapshot(value)
+		AlyaNum.new(123):sub(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("multiplication preserves its left operand", function()
+		local value = AlyaNum.new(123)
+		local before = snapshot(value)
+		value:mul(45)
+		expectUnchanged(value, before)
+	end)
+
+	test("multiplication preserves its right operand", function()
+		local value = AlyaNum.new(45)
+		local before = snapshot(value)
+		AlyaNum.new(123):mul(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("division preserves its left operand", function()
+		local value = AlyaNum.new(123)
+		local before = snapshot(value)
+		value:div(3)
+		expectUnchanged(value, before)
+	end)
+
+	test("division preserves its right operand", function()
+		local value = AlyaNum.new(3)
+		local before = snapshot(value)
+		AlyaNum.new(123):div(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("modulo preserves its dividend", function()
+		local value = AlyaNum.new(123)
+		local before = snapshot(value)
+		value:mod(7)
+		expectUnchanged(value, before)
+	end)
+
+	test("modulo preserves its divisor", function()
+		local value = AlyaNum.new(7)
+		local before = snapshot(value)
+		AlyaNum.new(123):mod(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("power preserves its base", function()
+		local value = AlyaNum.new(12)
+		local before = snapshot(value)
+		value:pow(3)
+		expectUnchanged(value, before)
+	end)
+
+	test("power preserves its exponent", function()
+		local value = AlyaNum.new(3)
+		local before = snapshot(value)
+		AlyaNum.new(12):pow(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("root preserves its radicand", function()
+		local value = AlyaNum.new(144)
+		local before = snapshot(value)
+		value:root(2)
+		expectUnchanged(value, before)
+	end)
+
+	test("root preserves its degree", function()
+		local value = AlyaNum.new(2)
+		local before = snapshot(value)
+		AlyaNum.new(144):root(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("log preserves its argument", function()
+		local value = AlyaNum.new(1000)
+		local before = snapshot(value)
+		value:log(10)
+		expectUnchanged(value, before)
+	end)
+
+	test("log preserves its base", function()
+		local value = AlyaNum.new(10)
+		local before = snapshot(value)
+		AlyaNum.new(1000):log(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("comparison preserves its left operand", function()
+		local value = AlyaNum.new(-12)
+		local before = snapshot(value)
+		value:compare(3)
+		expectUnchanged(value, before)
+	end)
+
+	test("comparison preserves its right operand", function()
+		local value = AlyaNum.new(3)
+		local before = snapshot(value)
+		AlyaNum.new(-12):compare(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("closeness preserves its receiver", function()
+		local value = AlyaNum.new(100)
+		local before = snapshot(value)
+		value:isCloseTo(100.001, 1e-3)
+		expectUnchanged(value, before)
+	end)
+
+	test("closeness preserves its comparison value", function()
+		local value = AlyaNum.new(100.001)
+		local before = snapshot(value)
+		AlyaNum.new(100):isCloseTo(value, 1e-3)
+		expectUnchanged(value, before)
+	end)
+
+	test("min preserves its receiver", function()
+		local value = AlyaNum.new(12)
+		local before = snapshot(value)
+		value:min(3)
+		expectUnchanged(value, before)
+	end)
+
+	test("min preserves its comparison value", function()
+		local value = AlyaNum.new(3)
+		local before = snapshot(value)
+		AlyaNum.new(12):min(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("max preserves its receiver", function()
+		local value = AlyaNum.new(12)
+		local before = snapshot(value)
+		value:max(3)
+		expectUnchanged(value, before)
+	end)
+
+	test("max preserves its comparison value", function()
+		local value = AlyaNum.new(3)
+		local before = snapshot(value)
+		AlyaNum.new(12):max(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("minmax preserves both operands", function()
+		local left = AlyaNum.new(12)
+		local right = AlyaNum.new(3)
+		local leftBefore = snapshot(left)
+		local rightBefore = snapshot(right)
+		left:minmax(right)
+		expectUnchanged(left, leftBefore)
+		expectUnchanged(right, rightBefore)
+	end)
+
+	test("absolute value preserves its receiver", function()
+		local value = AlyaNum.new(-12)
+		local before = snapshot(value)
+		value:abs()
+		expectUnchanged(value, before)
+	end)
+
+	test("unary negation preserves its receiver", function()
+		local value = AlyaNum.new(-12)
+		local before = snapshot(value)
+		value:unary()
+		expectUnchanged(value, before)
+	end)
+
+	test("reciprocal preserves its receiver", function()
+		local value = AlyaNum.new(12)
+		local before = snapshot(value)
+		value:reciprocal()
+		expectUnchanged(value, before)
+	end)
+
+	test("floor preserves its receiver", function()
+		local value = AlyaNum.new(12.75)
+		local before = snapshot(value)
+		value:floor()
+		expectUnchanged(value, before)
+	end)
+
+	test("round preserves its receiver", function()
+		local value = AlyaNum.new(12.75)
+		local before = snapshot(value)
+		value:round()
+		expectUnchanged(value, before)
+	end)
+
+	test("ceil preserves its receiver", function()
+		local value = AlyaNum.new(12.25)
+		local before = snapshot(value)
+		value:ceil()
+		expectUnchanged(value, before)
+	end)
+
+	test("factorial preserves its receiver", function()
+		local value = AlyaNum.new(8)
+		local before = snapshot(value)
+		value:factorial()
+		expectUnchanged(value, before)
+	end)
+
+	test("Lambert W preserves its receiver", function()
+		local value = AlyaNum.new(10)
+		local before = snapshot(value)
+		value:lambertw()
+		expectUnchanged(value, before)
+	end)
+
+	test("slog preserves its value", function()
+		local value = AlyaNum.new(4)
+		local before = snapshot(value)
+		value:slog(2)
+		expectUnchanged(value, before)
+	end)
+
+	test("slog preserves its base", function()
+		local value = AlyaNum.new(2)
+		local before = snapshot(value)
+		AlyaNum.new(4):slog(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("pentlog preserves its value", function()
+		local value = AlyaNum.new(4)
+		local before = snapshot(value)
+		value:pentlog(2)
+		expectUnchanged(value, before)
+	end)
+
+	test("pentlog preserves its base", function()
+		local value = AlyaNum.new(2)
+		local before = snapshot(value)
+		AlyaNum.new(4):pentlog(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("hextlog preserves its value", function()
+		local value = AlyaNum.new(4)
+		local before = snapshot(value)
+		value:hextlog(2)
+		expectUnchanged(value, before)
+	end)
+
+	test("hextlog preserves its base", function()
+		local value = AlyaNum.new(2)
+		local before = snapshot(value)
+		AlyaNum.new(4):hextlog(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("tetration preserves its base", function()
+		local value = AlyaNum.new(2)
+		local before = snapshot(value)
+		value:tet(3)
+		expectUnchanged(value, before)
+	end)
+
+	test("tetration preserves its height", function()
+		local value = AlyaNum.new(3)
+		local before = snapshot(value)
+		AlyaNum.new(2):tet(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("pentation preserves its base", function()
+		local value = AlyaNum.new(2)
+		local before = snapshot(value)
+		value:pent(2)
+		expectUnchanged(value, before)
+	end)
+
+	test("pentation preserves its height", function()
+		local value = AlyaNum.new(2)
+		local before = snapshot(value)
+		AlyaNum.new(2):pent(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("hexation preserves its base", function()
+		local value = AlyaNum.new(2)
+		local before = snapshot(value)
+		value:hext(2)
+		expectUnchanged(value, before)
+	end)
+
+	test("hexation preserves its height", function()
+		local value = AlyaNum.new(2)
+		local before = snapshot(value)
+		AlyaNum.new(2):hext(value)
+		expectUnchanged(value, before)
+	end)
+
+	test("toNumber preserves its receiver", function()
+		local value = AlyaNum.fromScientific("1e1000")
+		local before = snapshot(value)
+		value:toNumber()
+		expectUnchanged(value, before)
+	end)
+
+	test("toSerika preserves its receiver", function()
+		local value = AlyaNum.new(-12345)
+		local before = snapshot(value)
+		value:toSerika()
+		expectUnchanged(value, before)
+	end)
+
+	test("toSuffix preserves its receiver", function()
+		local value = AlyaNum.new(1234567)
+		local before = snapshot(value)
+		value:toSuffix()
+		expectUnchanged(value, before)
+	end)
+
+	test("toScientific preserves its receiver", function()
+		local value = AlyaNum.fromScientific("1e1000")
+		local before = snapshot(value)
+		value:toScientific()
+		expectUnchanged(value, before)
+	end)
+
+	test("toEChain preserves its receiver", function()
+		local value = AlyaNum.fromString("ee100")
+		local before = snapshot(value)
+		value:toEChain()
+		expectUnchanged(value, before)
+	end)
+
+	test("toString preserves its receiver", function()
+		local value = AlyaNum.new(0.25)
+		local before = snapshot(value)
+		value:toString()
+		expectUnchanged(value, before)
+	end)
+
+	test("leaderboard encoding preserves its receiver", function()
+		local value = AlyaNum.new(-12345)
+		local before = snapshot(value)
+		value:lbencode()
+		expectUnchanged(value, before)
+	end)
+
+	test("chained operations preserve the original", function()
+		local value = AlyaNum.new(12)
+		local before = snapshot(value)
+		value:add(3):mul(4):sub(5):div(2):pow(2)
+		expectUnchanged(value, before)
+	end)
+
+	test("repeated reads preserve a large value", function()
+		local value = AlyaNum.fromString("eee100")
+		local before = snapshot(value)
+		value:toNumber()
+		value:toSerika()
+		value:toScientific()
+		value:toString()
+		expectUnchanged(value, before)
+	end)
+
+	test("addition results do not alias their operands", function()
+		local value = AlyaNum.new(12)
+		local before = snapshot(value)
+		local result = value:add(3)
+		result.sign = -1
+		expectUnchanged(value, before)
+	end)
+
+	test("power results do not alias their base", function()
+		local value = AlyaNum.new(3)
+		local before = snapshot(value)
+		local result = value:pow(2)
+		result.sign = -1
+		expectUnchanged(value, before)
+	end)
+
+	test("absolute results do not alias their receiver", function()
+		local value = AlyaNum.new(-3)
+		local before = snapshot(value)
+		local result = value:abs()
+		result.sign = -1
+		expectUnchanged(value, before)
+	end)
+
+	test("fromOnoe does not mutate a raw base object", function()
+		local raw = {
+			sign = 1,
+			multiplicand = 4,
+			exponent = 2,
+			tetrate = 0,
+			pentate = 0,
+			hexate = 0,
+			heptate = 0,
+		}
+		local before = snapshot(AlyaNum.new(raw))
+		AlyaNum.fromOnoe(raw)
+		expect(raw.sign):toBe(before.sign)
+		expect(raw.multiplicand):toBe(before.multiplicand)
+		expect(raw.exponent):toBe(before.exponent)
+		expect(raw.tetrate):toBe(before.tetrate)
+	end)
+
+	test("fromOnoe does not mutate a mantissa object", function()
+		local raw = { mantissa = -2.5, exponent = 3 }
+		AlyaNum.fromOnoe(raw)
+		expect(raw.mantissa):toBe(-2.5)
+		expect(raw.exponent):toBe(3)
+	end)
+
+	test("fromOmega does not mutate a raw base object", function()
+		local raw = {
+			sign = 1,
+			multiplicand = 4,
+			exponent = 2,
+			tetrate = 0,
+			pentate = 0,
+			hexate = 0,
+			heptate = 0,
+		}
+		local before = snapshot(AlyaNum.new(raw))
+		AlyaNum.fromOmega(raw)
+		expect(raw.sign):toBe(before.sign)
+		expect(raw.multiplicand):toBe(before.multiplicand)
+		expect(raw.exponent):toBe(before.exponent)
+		expect(raw.tetrate):toBe(before.tetrate)
+	end)
+
+	test("fromOmega does not mutate its nested tuple", function()
+		local raw = { 1, { 4, 2, 0, 0, 0, 0 } }
+		local tuple = raw[2] :: { number }
+		AlyaNum.fromOmega(raw)
+		expect(raw[1]):toBe(1)
+		expect(tuple[1]):toBe(4)
+		expect(tuple[2]):toBe(2)
+	end)
+end)

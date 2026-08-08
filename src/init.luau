@@ -1513,7 +1513,15 @@ end
 function AlyaNum.fromOnoe(onoeNum: any): AlyaNum
 	local number: BaseAlyaNum
 	if onoeNum.sign ~= nil then -- is an onoenum
-		number = onoeNum :: BaseAlyaNum
+		number = {
+			sign = onoeNum.sign,
+			multiplicand = onoeNum.multiplicand,
+			exponent = onoeNum.exponent,
+			tetrate = onoeNum.tetrate,
+			pentate = onoeNum.pentate,
+			hexate = onoeNum.hexate,
+			heptate = onoeNum.heptate,
+		}
 	else -- probably already converted
 		if onoeNum.mantissa == 0 then
 			return ZERO
@@ -1534,7 +1542,15 @@ end
 function AlyaNum.fromOmega(onum: any): AlyaNum
 	local number: BaseAlyaNum
 	if onum.sign ~= nil then -- probably already converted
-		number = onum :: BaseAlyaNum
+		number = {
+			sign = onum.sign,
+			multiplicand = onum.multiplicand,
+			exponent = onum.exponent,
+			tetrate = onum.tetrate,
+			pentate = onum.pentate,
+			hexate = onum.hexate,
+			heptate = onum.heptate,
+		}
 	else
 		number = {
 			sign = onum[1] or 0,
