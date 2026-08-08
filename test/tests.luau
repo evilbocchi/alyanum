@@ -59,6 +59,40 @@ describe("Construction", function()
 	end)
 end)
 
+describe("Random generation", function()
+	test("random: stays within an ordinary range", function()
+		local lower = AlyaNum.new(-10)
+		local upper = AlyaNum.new(10)
+
+		for _ = 1, 100 do
+			local value = AlyaNum.random(lower, upper)
+			expect(value):toBeGreaterThanOrEqual(lower)
+			expect(value):toBeLessThan(upper)
+		end
+	end)
+
+	test("random: supports massive ranges", function()
+		local lower = AlyaNum.fromScientific("1e1000")
+		local upper = AlyaNum.fromScientific("2e1000")
+
+		for _ = 1, 20 do
+			local value = AlyaNum.random(lower, upper)
+			expect(value):toBeGreaterThanOrEqual(lower)
+			expect(value):toBeLessThan(upper)
+		end
+	end)
+
+	test("random: supports default and single-bound ranges", function()
+		local unitValue = AlyaNum.random()
+		expect(unitValue):toBeGreaterThanOrEqual(AlyaNum.new(0))
+		expect(unitValue):toBeLessThan(AlyaNum.new(1))
+
+		local boundedValue = AlyaNum.random(5)
+		expect(boundedValue):toBeGreaterThanOrEqual(AlyaNum.new(0))
+		expect(boundedValue):toBeLessThan(AlyaNum.new(5))
+	end)
+end)
+
 describe("Arithmetic", function()
 	test("add: simple addition", function()
 		local a = AlyaNum.new(2)

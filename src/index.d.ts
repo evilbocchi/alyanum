@@ -323,6 +323,15 @@ interface AlyaNumConstructor {
     new (val: Number): AlyaNum;
 
     /**
+     * Returns a uniformly distributed random AlyaNum in the range `[min, max)`.
+     * With one argument, returns a value in the range `[0, max)`. With no
+     * arguments, returns a value in the range `[0, 1)`.
+     */
+    random(): AlyaNum;
+    random(max: Number): AlyaNum;
+    random(min: Number, max: Number): AlyaNum;
+
+    /**
      * Create a new AlyaNum object from a BaseOnoeNum. This function is mainly
      * reserved for migration of number libraries. (OnoeNum -> AlyaNum)
      *

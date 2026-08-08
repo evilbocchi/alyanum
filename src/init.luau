@@ -1453,6 +1453,48 @@ function abs(self: AlyaNum): AlyaNum
 	}, AlyaNum)
 end
 
+local function scaleByFraction(number: AlyaNum, fraction: number): AlyaNum
+	if number.sign == 0 or fraction == 0 then
+		return ZERO
+	elseif fraction == 1 then
+		return number
+	elseif number.exponent == 0 and number.tetrate == 0 and number.pentate == 0 and number.hexate == 0 and number.heptate == 0 then
+		return AlyaNum.new(number.sign * number.multiplicand * fraction)
+	end
+
+	local logarithm = add(log10(abs(number)), AlyaNum.new(math.log10(fraction)))
+	local result = mutablePow10(logarithm)
+	result.sign = number.sign
+	return result
+end
+
+--- Returns a uniformly distributed random AlyaNum in the range [min, max).
+--- With one argument, returns a value in the range [0, max). With no arguments,
+--- returns a value in the range [0, 1).
+--- @param minimum Inclusive lower bound, or the exclusive upper bound when maximum is omitted.
+--- @param maximum Exclusive upper bound.
+--- @returns AlyaNum
+function random(minimum: Number?, maximum: Number?): AlyaNum
+	local lower: AlyaNum
+	local upper: AlyaNum
+	if maximum == nil then
+		lower = ZERO
+		upper = AlyaNum.new(minimum or ONE)
+	else
+		lower = AlyaNum.new(minimum or ZERO)
+		upper = AlyaNum.new(maximum)
+	end
+
+	if moreThan(lower, upper) then
+		lower, upper = upper, lower
+	elseif equals(lower, upper) then
+		return lower
+	end
+
+	local span = add(upper, unary(lower))
+	return add(lower, scaleByFraction(span, math.random()))
+end
+
 --- Checks if this AlyaNum is approximately equal to the specified number.
 --- Relative tolerance is used for nonzero values, while absolute tolerance is
 --- also checked to support values near zero and values with opposite signs.
@@ -2400,6 +2442,13 @@ end
 --- This operation is unsafe for numbers beyond 2^1024.
 AlyaNum.ceil = function(self: AlyaNum)
 	return ceil(AlyaNum.new(self))
+end
+
+--- Returns a uniformly distributed random AlyaNum in the range [min, max).
+--- With one argument, returns a value in the range [0, max). With no arguments,
+--- returns a value in the range [0, 1).
+AlyaNum.random = function(minimum: Number?, maximum: Number?)
+	return random(minimum, maximum)
 end
 
 --- Returns if the AlyaNum is an integer.
