@@ -260,7 +260,10 @@ function AlyaNum.new(number: number | BaseAlyaNum): AlyaNum
 			heptate = 0,
 		})
 	end
-	return setmetatable(number :: BaseAlyaNum, AlyaNum)
+	if getmetatable(number) ~= AlyaNum then
+		return setmetatable(number :: BaseAlyaNum, AlyaNum)
+	end
+	return number :: AlyaNum
 end
 
 -- cached numbers
@@ -360,6 +363,19 @@ function add(self: AlyaNum, number: AlyaNum): AlyaNum
 	elseif number.sign == 0 then
 		return self
 	end
+	if self.exponent == 0
+		and number.exponent == 0
+		and self.tetrate == 0
+		and number.tetrate == 0
+		and self.pentate == 0
+		and number.pentate == 0
+		and self.hexate == 0
+		and number.hexate == 0
+		and self.heptate == 0
+		and number.heptate == 0
+	then
+		return AlyaNum.new(self.sign * self.multiplicand + number.sign * number.multiplicand)
+	end
 
 	local minAbsNum, maxAbsNum = absMinmax(self, number)
 
@@ -439,6 +455,22 @@ function mul(self: AlyaNum, number: AlyaNum): AlyaNum
 	elseif equalsOne(number) then
 		return self
 	end
+	if self.exponent == 0
+		and number.exponent == 0
+		and self.tetrate == 0
+		and number.tetrate == 0
+		and self.pentate == 0
+		and number.pentate == 0
+		and self.hexate == 0
+		and number.hexate == 0
+		and self.heptate == 0
+		and number.heptate == 0
+	then
+		local product = self.multiplicand * number.multiplicand
+		if product < FLOAT64_LIMIT then
+			return AlyaNum.new(self.sign * number.sign * product)
+		end
+	end
 
 	local maxNum = absMax(self, number)
 	if absMoreThan(maxNum, MAX_MUL) then
@@ -505,7 +537,24 @@ function pow(self: AlyaNum, number: AlyaNum): AlyaNum
 		return mutableUnary(pow(abs(self), number))
 	elseif self.sign <= 0 then -- produces imaginary numbers, not supported
 		return ZERO
-	elseif moreEquals(max(self, number), MAX_POW) then
+	end
+	if self.exponent == 0
+		and number.exponent == 0
+		and self.tetrate == 0
+		and number.tetrate == 0
+		and self.pentate == 0
+		and number.pentate == 0
+		and self.hexate == 0
+		and number.hexate == 0
+		and self.heptate == 0
+		and number.heptate == 0
+	then
+		local result = math.pow(self.multiplicand, number.multiplicand)
+		if result < FLOAT64_LIMIT then
+			return AlyaNum.new(result)
+		end
+	end
+	if moreEquals(max(self, number), MAX_POW) then
 		return max(self, number)
 	elseif equals(self, TEN) then
 		return pow10(number)
