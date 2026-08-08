@@ -184,6 +184,15 @@ interface AlyaNum extends BaseAlyaNum {
     hext(number: Number): AlyaNum;
 
     /**
+     * Strips the metatable from the AlyaNum object and returns a BaseAlyaNum.
+     * This is mutable, so be careful when using it.
+     */
+    toBaseAlya: (number: AlyaNum) => BaseAlyaNum;
+
+    /** Converts AlyaNum to a single primitive number for leaderboards. */
+    lbencode: () => number;
+
+    /**
      * Get the absolute value of the AlyaNum.
      */
     abs(): AlyaNum;
@@ -294,7 +303,7 @@ interface AlyaNumConstructor {
      * Create a new AlyaNum object from a primitive number.
      * @param val Primitive number or a table containing mantissa and exponent entries
      */
-    new (val: Number): AlyaNum;
+    new(val: Number): AlyaNum;
 
     /**
      * Create a new AlyaNum object from a BaseOnoeNum. This function is mainly
@@ -303,7 +312,7 @@ interface AlyaNumConstructor {
      * @param onoeNum Object to migrate from. Will automatically detect when the object is already migrated
      * @returns Resulting AlyaNum object
      */
-    fromOnoe: (onoeNum: { mantissa: number; exponent: number }) => AlyaNum;
+    fromOnoe: (onoeNum: { mantissa: number; exponent: number; }) => AlyaNum;
 
     /**
      * Create a new AlyaNum object from an OmegaNum. This function is mainly
@@ -328,6 +337,9 @@ interface AlyaNumConstructor {
      * @returns Resulting AlyaNum
      */
     fromString: (str: string) => AlyaNum;
+
+    /** Converts a single primitive number back into AlyaNum. */
+    lbdecode: (int: number) => AlyaNum;
 
     /**
      * Rounds down the AlyaNum to the nearest integer.

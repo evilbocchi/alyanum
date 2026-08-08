@@ -1746,11 +1746,13 @@ function AlyaNum.fromString(str): AlyaNum
 	end
 end
 
+--- Strips the metatable from the AlyaNum object and returns a BaseAlyaNum.
+--- This is mutable, so be careful when using it.
 function AlyaNum.toBaseAlya(self: AlyaNum): BaseAlyaNum
 	return (setmetatable(self, nil) :: unknown) :: BaseAlyaNum
 end
 
--- completely stolen from omeganum
+--- Converts AlyaNum to a single primitive number for leaderboards.
 function AlyaNum.lbencode(self: AlyaNum): number
 	if self.sign == 0 then
 		return 0
@@ -1821,6 +1823,7 @@ function AlyaNum.lbencode(self: AlyaNum): number
 	return 0
 end
 
+--- Converts a single primitive number back into AlyaNum.
 function AlyaNum.lbdecode(int: number): AlyaNum
 	if int == 0 then
 		return ZERO
