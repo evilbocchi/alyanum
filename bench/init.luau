@@ -18,6 +18,12 @@ local testNumbers = {
 	large = { 1.23e100, 4.56e200, 7.89e300 },
 }
 
+local negativeTestNumbers = {
+	small = { -123.456, -789.012, -345.678 },
+	medium = { -1.23e15, -4.56e20, -7.89e25 },
+	large = { -1.23e100, -4.56e200, -7.89e300 },
+}
+
 -- Convert test numbers to AlyaNum format
 local testAlyaNum = {}
 for category, numbers in testNumbers do
@@ -33,6 +39,22 @@ for category, numbers in testNumbers do
 	testEternityNum[category] = {}
 	for i, num in numbers do
 		testEternityNum[category][i] = EternityNum.fromNumber(num)
+	end
+end
+
+local negativeTestAlyaNum = {}
+for category, numbers in negativeTestNumbers do
+	negativeTestAlyaNum[category] = {}
+	for i, num in numbers do
+		negativeTestAlyaNum[category][i] = AlyaNum.new(num)
+	end
+end
+
+local negativeTestEternityNum = {}
+for category, numbers in negativeTestNumbers do
+	negativeTestEternityNum[category] = {}
+	for i, num in numbers do
+		negativeTestEternityNum[category][i] = EternityNum.fromNumber(num)
 	end
 end
 
@@ -57,13 +79,13 @@ local function formatOpsPerSecond(ops: number): string
 	end
 end
 
-local function benchmark(func: () -> (), iterations: number): (number, number)
-	-- Warmup
+local function warmup(func: () -> ())
 	for i = 1, WARMUP_ITERATIONS do
 		func()
 	end
+end
 
-	-- Actual benchmark
+local function benchmark(func: () -> (), iterations: number): (number, number)
 	local startTime = os.clock()
 	for i = 1, iterations do
 		func()
@@ -77,11 +99,11 @@ local function benchmark(func: () -> (), iterations: number): (number, number)
 	return avgTime, opsPerSecond
 end
 
-local function createNativeBenchmarks(data)
+local function createNativeBenchmarks(data, power: number?)
 	local left = data.medium[1]
 	local right = data.medium[2]
 	local smallValue = data.small[1]
-	local power = 2.5
+	power = power or 2.5
 
 	return {
 		addition = function()
@@ -109,11 +131,11 @@ local function createNativeBenchmarks(data)
 	}
 end
 
-local function createEternityBenchmarks(data)
+local function createEternityBenchmarks(data, power: number?)
 	local left = data.medium[1]
 	local right = data.medium[2]
 	local smallValue = data.small[1]
-	local power = 2.5
+	power = power or 2.5
 
 	return {
 		addition = function()
@@ -142,37 +164,94 @@ local function createEternityBenchmarks(data)
 end
 
 local operationOrder = {
-	{ key = "addition", label = "Addition" },
-	{ key = "multiplication", label = "Multiplication" },
-	{ key = "exponentiation", label = "Exponentiation" },
-	{ key = "comparison", label = "Comparison" },
+	{ key = "addition", label = "Addition", dataset = "positive", benchmarkKey = "addition" },
+	{ key = "multiplication", label = "Multiplication", dataset = "positive", benchmarkKey = "multiplication" },
+	{ key = "exponentiation", label = "Exponentiation", dataset = "positive", benchmarkKey = "exponentiation" },
+	{ key = "comparison", label = "Comparison", dataset = "positive", benchmarkKey = "comparison" },
+	{ key = "negativeAddition", label = "Addition (negative)", dataset = "negative", benchmarkKey = "addition" },
+	{
+		key = "negativeMultiplication",
+		label = "Multiplication (negative)",
+		dataset = "negative",
+		benchmarkKey = "multiplication",
+	},
+	{
+		key = "negativeExponentiation",
+		label = "Exponentiation (negative)",
+		dataset = "negative",
+		benchmarkKey = "exponentiation",
+	},
+	{ key = "negativeComparison", label = "Comparison (negative)", dataset = "negative", benchmarkKey = "comparison" },
 }
 
 local competitors = {
-	{ key = "number", label = "number", benchmarks = createNativeBenchmarks(testNumbers) },
-	{ key = "alya", label = "AlyaNum", benchmarks = createNativeBenchmarks(testAlyaNum) },
-	{ key = "eternity", label = "EternityNum", benchmarks = createEternityBenchmarks(testEternityNum) },
+	{
+		key = "number",
+		label = "number",
+		benchmarks = {
+			positive = createNativeBenchmarks(testNumbers),
+			negative = createNativeBenchmarks(negativeTestNumbers, 3),
+		},
+	},
+	{
+		key = "alya",
+		label = "AlyaNum",
+		benchmarks = {
+			positive = createNativeBenchmarks(testAlyaNum),
+			negative = createNativeBenchmarks(negativeTestAlyaNum, 3),
+		},
+	},
+	{
+		key = "eternity",
+		label = "EternityNum",
+		benchmarks = {
+			positive = createEternityBenchmarks(testEternityNum),
+			negative = createEternityBenchmarks(negativeTestEternityNum, 3),
+		},
+	},
 }
 
 local BASELINE_KEY = "number"
-local OPERATION_COLUMN_WIDTH = 18
+local OPERATION_COLUMN_WIDTH = 28
 local COMPETITOR_COLUMN_WIDTH = 22
 
 -- Main benchmark execution
 local function runAllBenchmarks()
 	print(
-		string.format("Running %dK iterations per test with %d warmup iterations", ITERATIONS / 1000, WARMUP_ITERATIONS)
+		string.format(
+			"Preparing %dK timed iterations per test with %d warmup iterations",
+			ITERATIONS / 1000,
+			WARMUP_ITERATIONS
+		)
 	)
-	print(string.rep("=", 60))
+	local allBenchmarks = {}
+	for _, operation in operationOrder do
+		local operationBenchmarks = {}
+		for _, competitor in competitors do
+			local createBenchmark = competitor.benchmarks[operation.dataset][operation.benchmarkKey]
+			assert(
+				createBenchmark,
+				string.format("Missing %s benchmark for %s", operation.benchmarkKey, competitor.label)
+			)
 
+			operationBenchmarks[competitor.key] = createBenchmark()
+		end
+		allBenchmarks[operation.key] = operationBenchmarks
+	end
+
+	print("Warming up benchmarks...")
+	for _, operation in operationOrder do
+		for _, competitor in competitors do
+			warmup(allBenchmarks[operation.key][competitor.key])
+		end
+	end
+
+	print("Running timed benchmarks...")
 	local allResults = {}
 	for _, operation in operationOrder do
 		local operationResults = {}
 		for _, competitor in competitors do
-			local createBenchmark = competitor.benchmarks[operation.key]
-			assert(createBenchmark, string.format("Missing %s benchmark for %s", operation.key, competitor.label))
-
-			local time, ops = benchmark(createBenchmark(), ITERATIONS)
+			local time, ops = benchmark(allBenchmarks[operation.key][competitor.key], ITERATIONS)
 			operationResults[competitor.key] = { time = time, ops = ops }
 		end
 		allResults[operation.key] = operationResults
