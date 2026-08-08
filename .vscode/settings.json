@@ -1,5 +1,5 @@
 {
-    "typescript.tsdk": "node_modules/typescript/lib",
+    "js/ts.tsdk.path": "node_modules/typescript/lib",
     "files.eol": "\n",
     "[typescript]": {
         "editor.defaultFormatter": "vscode.typescript-language-features",
@@ -10,6 +10,5 @@
         "editor.formatOnSave": true
     },
     "eslint.run": "onType",
-    "eslint.format.enable": true,
-    "js/ts.tsdk.path": "node_modules/typescript/lib"
+    "eslint.format.enable": true
 }
