@@ -674,18 +674,14 @@ local function runAllBenchmarks()
 		printTableRow(operation.label, values)
 	end
 
-	local baselineCompetitor
 	local relativeCompetitors = {}
 	for _, competitor in competitors do
-		if competitor.key == BASELINE_KEY then
-			baselineCompetitor = competitor
-		else
+		if competitor.key ~= BASELINE_KEY then
 			table.insert(relativeCompetitors, competitor)
 		end
 	end
-	assert(baselineCompetitor, string.format("Missing baseline competitor: %s", BASELINE_KEY))
 
-	print("\nRELATIVE PERFORMANCE VS NUMBER")
+	print("\nRELATIVE PERFORMANCE")
 	printTableSeparator("-", #relativeCompetitors)
 	local relativeLabels = {}
 	for _, competitor in relativeCompetitors do
@@ -695,12 +691,25 @@ local function runAllBenchmarks()
 	printTableSeparator("-", #relativeCompetitors)
 	for _, operation in operationOrder do
 		local results = allResults[operation.key]
-		local baselineResult = results[baselineCompetitor.key]
+		local baselineResult
+		local relativeBaselineKey
+		local baselineCompetitors = if results[BASELINE_KEY] then relativeCompetitors else competitors
+		for _, competitor in baselineCompetitors do
+			local result = results[competitor.key]
+			if result and (not baselineResult or result.ops > baselineResult.ops) then
+				baselineResult = result
+				relativeBaselineKey = competitor.key
+			end
+		end
 		local values = {}
 		for _, competitor in relativeCompetitors do
 			local result = results[competitor.key]
 			if baselineResult and result then
-				table.insert(values, calculateSpeedRatio(baselineResult.ops, result.ops))
+				if competitor.key == relativeBaselineKey then
+					table.insert(values, "best")
+				else
+					table.insert(values, calculateSpeedRatio(baselineResult.ops, result.ops))
+				end
 			else
 				table.insert(values, "n/a")
 			end
