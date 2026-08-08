@@ -9,7 +9,7 @@ local EternityNum = require("./bench/EternityNum")
 local OmegaNum = require("./bench/OmegaNum")
 
 -- Benchmark configuration
-local ITERATIONS = 200000 -- 200K operations as mentioned in the chart
+local ITERATIONS = 20000
 local WARMUP_ITERATIONS = 1000
 local EXPENSIVE_ITERATIONS = 5000
 local EXPENSIVE_WARMUP_ITERATIONS = 100
