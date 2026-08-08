@@ -4,7 +4,6 @@
     "description": "Alisa Mikhailovna \"Alya\" Kujou's go-to big number library for small and large-scale incremental games!",
     "main": "AlyaNum/init.lua",
     "scripts": {
-        "prepare": "rokit install --no-trust-check",
         "build": "rbxtsc && lune run release.luau",
         "lint": "rk luau-lsp analyze --flag:LuauSolverV2=true --platform=standard src test",
         "bench": "lune run bench",
@@ -38,7 +37,7 @@
         "@rbxts/compiler-types": "^3.0.0-types.0",
         "@rbxts/types": "^1",
         "prettier": "^3.9.6",
-        "rkkit": "^0.0.3",
+        "rkkit": "^0.1.0",
         "roblox-ts": "^3.0.0",
         "typedoc": "^0.28.20",
         "typedoc-material-theme": "^1.4.1",
