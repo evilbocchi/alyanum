@@ -245,7 +245,7 @@ end
 --- @returns AlyaNum
 function AlyaNum.new(number: number | BaseAlyaNum): AlyaNum
 	if type(number) == "number" then
-		if number == HUGE then
+		if number == HUGE or number == -HUGE then
 			error("cannot parse math.huge")
 			-- dont use AlyaNum.new for numbers larger than 10^308;
 			-- either split it into two smaller numbers e.g. AlyaNum.new(10):pow(900) or use AlyaNum.fromScientific
@@ -363,18 +363,26 @@ function add(self: AlyaNum, number: AlyaNum): AlyaNum
 	elseif number.sign == 0 then
 		return self
 	end
-	if self.exponent == 0
-		and number.exponent == 0
-		and self.tetrate == 0
-		and number.tetrate == 0
+	if
+		self.tetrate == 0
 		and self.pentate == 0
-		and number.pentate == 0
 		and self.hexate == 0
-		and number.hexate == 0
 		and self.heptate == 0
+		and number.tetrate == 0
+		and number.pentate == 0
+		and number.hexate == 0
 		and number.heptate == 0
+		and self.exponent < 2
+		and number.exponent < 2
+		and (self.exponent == 0 or self.multiplicand <= LOG10_FLOAT64_LIMIT)
+		and (number.exponent == 0 or number.multiplicand <= LOG10_FLOAT64_LIMIT)
 	then
-		return AlyaNum.new(self.sign * self.multiplicand + number.sign * number.multiplicand)
+		local left = self.exponent == 1 and math.pow(10, self.multiplicand) or self.multiplicand
+		local right = number.exponent == 1 and math.pow(10, number.multiplicand) or number.multiplicand
+		local sum = self.sign * left + number.sign * right
+		if sum > -FLOAT64_LIMIT and sum < FLOAT64_LIMIT then
+			return AlyaNum.new(sum)
+		end
 	end
 
 	local minAbsNum, maxAbsNum = absMinmax(self, number)
@@ -455,18 +463,23 @@ function mul(self: AlyaNum, number: AlyaNum): AlyaNum
 	elseif equalsOne(number) then
 		return self
 	end
-	if self.exponent == 0
-		and number.exponent == 0
-		and self.tetrate == 0
-		and number.tetrate == 0
+	if
+		self.tetrate == 0
 		and self.pentate == 0
-		and number.pentate == 0
 		and self.hexate == 0
-		and number.hexate == 0
 		and self.heptate == 0
+		and number.tetrate == 0
+		and number.pentate == 0
+		and number.hexate == 0
 		and number.heptate == 0
+		and self.exponent < 2
+		and number.exponent < 2
+		and (self.exponent == 0 or self.multiplicand <= LOG10_FLOAT64_LIMIT)
+		and (number.exponent == 0 or number.multiplicand <= LOG10_FLOAT64_LIMIT)
 	then
-		local product = self.multiplicand * number.multiplicand
+		local left = self.exponent == 1 and math.pow(10, self.multiplicand) or self.multiplicand
+		local right = number.exponent == 1 and math.pow(10, number.multiplicand) or number.multiplicand
+		local product = left * right
 		if product < FLOAT64_LIMIT then
 			return AlyaNum.new(self.sign * number.sign * product)
 		end
@@ -530,6 +543,20 @@ function pow(self: AlyaNum, number: AlyaNum): AlyaNum
 		return self
 	elseif number.sign == -1 then
 		return reciprocal(pow(self, unary(number)))
+	elseif
+		self.sign == -1
+		and number.exponent == 0
+		and number.tetrate == 0
+		and number.pentate == 0
+		and number.hexate == 0
+		and number.heptate == 0
+	then
+		if math.fmod(number.multiplicand, 1) ~= 0 then
+			return ZERO
+		elseif math.fmod(number.multiplicand, 2) == 1 then
+			return mutableUnary(pow(abs(self), number))
+		end
+		return pow(abs(self), number)
 	elseif self.sign == -1 and isInteger(number) then
 		if lessThan(mod(number, TWO), ONE) then
 			return pow(abs(self), number)
@@ -538,7 +565,8 @@ function pow(self: AlyaNum, number: AlyaNum): AlyaNum
 	elseif self.sign <= 0 then -- produces imaginary numbers, not supported
 		return ZERO
 	end
-	if self.exponent == 0
+	if
+		self.exponent == 0
 		and number.exponent == 0
 		and self.tetrate == 0
 		and number.tetrate == 0
@@ -790,6 +818,15 @@ end
 --- @returns AlyaNum | nil
 --- @see https://en.wikipedia.org/wiki/Iterated_logarithm
 function slog(self: AlyaNum, base: Number): AlyaNum?
+	self = setmetatable({
+		sign = self.sign,
+		multiplicand = self.multiplicand,
+		exponent = self.exponent,
+		tetrate = self.tetrate,
+		pentate = self.pentate,
+		hexate = self.hexate,
+		heptate = self.heptate,
+	}, AlyaNum)
 	base = AlyaNum.new(base)
 	if self.sign == -1 then
 		return NEG_ONE
@@ -839,6 +876,15 @@ function slog(self: AlyaNum, base: Number): AlyaNum?
 end
 
 function pentlog(self: AlyaNum, base: Number): AlyaNum?
+	self = setmetatable({
+		sign = self.sign,
+		multiplicand = self.multiplicand,
+		exponent = self.exponent,
+		tetrate = self.tetrate,
+		pentate = self.pentate,
+		hexate = self.hexate,
+		heptate = self.heptate,
+	}, AlyaNum)
 	base = AlyaNum.new(base)
 	if self.sign == -1 then
 		return NEG_ONE
@@ -892,6 +938,15 @@ function pentlog(self: AlyaNum, base: Number): AlyaNum?
 end
 
 function hextlog(self: AlyaNum, base: Number): AlyaNum?
+	self = setmetatable({
+		sign = self.sign,
+		multiplicand = self.multiplicand,
+		exponent = self.exponent,
+		tetrate = self.tetrate,
+		pentate = self.pentate,
+		hexate = self.hexate,
+		heptate = self.heptate,
+	}, AlyaNum)
 	base = AlyaNum.new(base)
 	if self.sign == -1 then
 		return NEG_ONE
@@ -1096,9 +1151,9 @@ function pentate(self: AlyaNum, number: AlyaNum): AlyaNum
 	if count == 100 or lessThan(self, ERECIPE) then
 		floored = 0
 	end
-    if result == nil then
-        error("result is nil in pentate")
-    end
+	if result == nil then
+		error("result is nil in pentate")
+	end
 	result.tetrate += floored
 	return fix(result)
 end
@@ -1134,10 +1189,10 @@ function hexate(self: AlyaNum, number: AlyaNum): AlyaNum
 			local nel = mutableUnary(log(self, E))
 			return div(lambertw(nel), nel)
 		end
-        local slogSelf = slog(self, TEN)
-        if slogSelf == nil then
-            error("slog failed to compute for hexate")
-        end
+		local slogSelf = slog(self, TEN)
+		if slogSelf == nil then
+			error("slog failed to compute for hexate")
+		end
 		local q = add(slogSelf, number)
 		q.tetrate = number.tetrate
 		q.pentate = number.pentate
@@ -1164,9 +1219,9 @@ function hexate(self: AlyaNum, number: AlyaNum): AlyaNum
 			floored -= 1
 		else
 			result = pentlog(result, self)
-            if result == nil then
-                error("pentlog failed to compute for hexate")
-            end
+			if result == nil then
+				error("pentlog failed to compute for hexate")
+			end
 			if equals(check, result) then
 				floored = 0
 				break
@@ -1178,9 +1233,9 @@ function hexate(self: AlyaNum, number: AlyaNum): AlyaNum
 	if count == 100 or lessThan(self, ERECIPE) then
 		floored = 0
 	end
-    if result == nil then
-        error("result is nil in hexate")
-    end
+	if result == nil then
+		error("result is nil in hexate")
+	end
 	result.pentate += floored
 	return fix(result)
 end
@@ -1537,6 +1592,8 @@ end
 function toScientific(self: AlyaNum): string
 	if self.sign == 0 then
 		return "0"
+	elseif self.sign == -1 then
+		return "-" .. toScientific(abs(self))
 	elseif self.exponent > 2 then
 		return toEChain(self)
 	end
@@ -1634,37 +1691,57 @@ end
 
 function getSuffixExponent(suffix: string): number?
 	local exponent = 0
+	local matched = false
 	for i, v in suffixes.third do
-		local startIndex, _endIndex = string.find(suffix, v)
+		local startIndex, endIndex = string.find(suffix, v)
 		if startIndex ~= nil then
+			if endIndex ~= #suffix then
+				return nil
+			end
+			matched = true
 			exponent += i * 300
 			suffix = string.sub(suffix, 1, startIndex - 1)
 			break
 		end
 	end
 	for i, v in suffixes.second do
-		local startIndex, _endIndex = string.find(suffix, v)
+		local startIndex, endIndex = string.find(suffix, v)
 		if startIndex ~= nil then
+			if endIndex ~= #suffix then
+				return nil
+			end
+			matched = true
 			exponent += i * 30
 			suffix = string.sub(suffix, 1, startIndex - 1)
 			break
 		end
 	end
 	for i, v in suffixes.first do
-		local startIndex, _endIndex = string.find(suffix, v)
+		local startIndex, endIndex = string.find(suffix, v)
 		if startIndex ~= nil then
+			if endIndex ~= #suffix then
+				return nil
+			end
+			matched = true
 			exponent += i * 3
 			suffix = string.sub(suffix, 1, startIndex - 1)
 			break
 		end
 	end
 	for i, v in suffixes.beginning do
-		local startIndex, _endIndex = string.find(suffix, v)
+		local startIndex, endIndex = string.find(suffix, v)
 		if startIndex ~= nil then
+			if endIndex ~= #suffix then
+				return nil
+			end
+			matched = true
 			exponent += i * 3 - 3
 			suffix = string.sub(suffix, 1, startIndex - 1)
 			break
 		end
+	end
+	if not matched or suffix ~= "" then
+		return nil
 	end
 
 	return exponent + 3
@@ -1709,7 +1786,7 @@ function AlyaNum.fromString(str): AlyaNum
 		return ZERO
 	end
 	if (string.find(str, "e") or string.find(str, "E")) and not string.find(str, "%[") then
-		local subs = string.split(str, "e")
+		local subs = string.split(string.gsub(str, "E", "e"), "e")
 		-- Fix problem with tetrate
 		if subs[1] == "" then
 			table.insert(subs, 1, "1")
@@ -1784,7 +1861,7 @@ function AlyaNum.fromString(str): AlyaNum
 	local fields = parseNumberArray(str)
 	if fields ~= nil then
 		local sign = math.sign(fields[1] or 1)
-		fields[1] = math.abs(fields[1] or 0)
+		table.remove(fields, 1)
 		return fix(AlyaNum.fromOmega({ sign, fields }))
 	else
 		local fromSuff = fromSuffix(str)
@@ -1847,17 +1924,17 @@ function AlyaNum.lbencode(self: AlyaNum): number
 		cnum += math.log10((self.tetrate + (math.log10(self.exponent + 1) / 16) + 1)) * 6.26775e14
 		return sign * cnum
 	elseif self.exponent > 0 then
-		if self.exponent <= 9999 then
+		if self.exponent < 4 then
+			-- mode 1: Native BigNum
+			-- mode 2: Native Post-BigNum
+			-- mode 3: Native EternityNum
+			return sign * ((math.log10((self.multiplicand + 1)) * 6.26775e14) + self.exponent * 1e16)
+		elseif self.exponent <= 9999 then
 			-- mode 4: Native Big EternityNum Numbers
 			local cnum = 4e16
 			cnum += math.log10((self.multiplicand + 1)) * 6.26775e8
 			cnum += self.exponent * 1e10
 			return sign * cnum
-		elseif self.exponent < 4 then
-			-- mode 1: Native BigNum
-			-- mode 2: Native Post-BigNum
-			-- mode 3: Native EternityNum
-			return sign * ((math.log10((self.multiplicand + 1)) * 6.26775e14) + self.exponent * 1e16)
 		end
 		-- mode 5: Native Extreme EternityNum Numbers
 		local cnum = 5e16
@@ -1995,7 +2072,7 @@ function AlyaNum.lbdecode(int: number): AlyaNum
 			heptate = 0,
 		})
 	else
-		local zeros = mode - 10
+		local zeros = mode - 9
 		local remainder = math.fmod(int, 1e16)
 		local arrows = 10 ^ (remainder / 6.26775e14) - 1
 		local arg1 = FLOAT64_SAFE_LIMIT ^ (math.fmod(arrows, 1))
@@ -2013,7 +2090,7 @@ function AlyaNum.lbdecode(int: number): AlyaNum
 end
 
 function AlyaNum.fromScientific(str: string): AlyaNum
-	local split = string.split(str, "e")
+	local split = string.split(string.gsub(str, "E", "e"), "e")
 	local mantissa = AlyaNum.new(tonumber(split[1]) or 0)
 	if #split == 1 then
 		return mantissa
@@ -2043,79 +2120,79 @@ AlyaNum.fix = fix
 --- Adds the specified number to this AlyaNum and returns the result as a new AlyaNum.
 --- @param number The number to add (can be AlyaNum, BaseAlyaNum, or primitive number).
 AlyaNum.add = function(self: AlyaNum, number: Number)
-	return add(self, AlyaNum.new(number))
+	return add(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Subtracts the specified number from this AlyaNum and returns the result as a new AlyaNum.
 --- @param number The number to subtract.
 AlyaNum.sub = function(self: AlyaNum, number: Number)
-	return add(self, unary(AlyaNum.new(number)))
+	return add(AlyaNum.new(self), unary(AlyaNum.new(number)))
 end
 
 --- Multiplies this AlyaNum by the specified number and returns the result as a new AlyaNum.
 --- @param number The number to multiply by.
 AlyaNum.mul = function(self: AlyaNum, number: Number)
-	return mul(self, AlyaNum.new(number))
+	return mul(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Divides this AlyaNum by the specified number and returns the result as a new AlyaNum.
 --- @param number The number to divide by.
 AlyaNum.div = function(self: AlyaNum, number: Number)
-	return div(self, AlyaNum.new(number))
+	return div(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Raises this AlyaNum to the power of the specified number and returns the result as a new AlyaNum.
 --- @param number The exponent value.
 AlyaNum.pow = function(self: AlyaNum, number: Number)
-	return pow(self, AlyaNum.new(number))
+	return pow(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Returns the remainder after dividing this AlyaNum by the specified number.
 --- @param number The divisor.
 AlyaNum.mod = function(self: AlyaNum, number: Number)
-	return mod(self, AlyaNum.new(number))
+	return mod(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Calculates the nth root of this AlyaNum, where n is the specified number.
 --- @param number The degree of the root.
 AlyaNum.root = function(self: AlyaNum, number: Number)
-	return root(self, AlyaNum.new(number))
+	return root(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Checks if this AlyaNum is exactly equal to the specified number.
 --- @param number The number to compare against.
 AlyaNum.equals = function(self: AlyaNum, number: Number)
-	return equals(self, AlyaNum.new(number))
+	return equals(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Checks if this AlyaNum is less than the specified number.
 --- @param number The number to compare against.
 AlyaNum.lessThan = function(self: AlyaNum, number: Number)
-	return lessThan(self, AlyaNum.new(number))
+	return lessThan(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Checks if this AlyaNum is less than or equal to the specified number.
 --- @param number The number to compare against.
 AlyaNum.lessEquals = function(self: AlyaNum, number: Number)
-	return lessEquals(self, AlyaNum.new(number))
+	return lessEquals(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Checks if this AlyaNum is greater than the specified number.
 --- @param number The number to compare against.
 AlyaNum.moreThan = function(self: AlyaNum, number: Number)
-	return moreThan(self, AlyaNum.new(number))
+	return moreThan(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Checks if this AlyaNum is greater than or equal to the specified number.
 --- @param number The number to compare against.
 AlyaNum.moreEquals = function(self: AlyaNum, number: Number)
-	return moreEquals(self, AlyaNum.new(number))
+	return moreEquals(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Compares two numbers.
 --- @param number The number to compare against.
 AlyaNum.compare = function(self: AlyaNum, number: Number)
-	return compare(self, AlyaNum.new(number))
+	return compare(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Get the absolute value of the AlyaNum.
@@ -2172,37 +2249,37 @@ end
 --- Returns the super-logarithm of the AlyaNum with the specified base.
 --- @param number Base of the logarithm
 AlyaNum.slog = function(self: AlyaNum, number: Number)
-	return slog(self, AlyaNum.new(number))
+	return slog(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Returns x^^^y, where ^^^ = pentation, and pentation is repeated tetration.
 --- @param number Height of the tetration tower.
 AlyaNum.pentlog = function(self: AlyaNum, number: Number)
-	return pentlog(self, AlyaNum.new(number))
+	return pentlog(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Returns x^^^^y, where ^^^^ = hexation, and hexation is repeated pentation.
 --- @param number Height of the pentation tower.
 AlyaNum.hextlog = function(self: AlyaNum, number: Number)
-	return hextlog(self, AlyaNum.new(number))
+	return hextlog(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Returns x^^y, where ^^ = tetration, and tetration is repeated exponentiation.
 --- @param number Height of the power tower.
 AlyaNum.tet = function(self: AlyaNum, number: Number)
-	return tetrate(self, AlyaNum.new(number))
+	return tetrate(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Returns x^^^y, where ^^^ = pentation, and pentation is repeated tetration.
 --- @param number Height of the tetration tower.
 AlyaNum.pent = function(self: AlyaNum, number: Number)
-	return pentate(self, AlyaNum.new(number))
+	return pentate(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Returns x^^^^y, where ^^^^ = hexation, and hexation is repeated pentation.
 --- @param number Height of the pentation tower.
 AlyaNum.hext = function(self: AlyaNum, number: Number)
-	return hexate(self, AlyaNum.new(number))
+	return hexate(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Flips the sign of the AlyaNum object. Equivalent to multiplying by -1.
@@ -2333,8 +2410,10 @@ AlyaNum.__unm = AlyaNum.unm
 AlyaNum.__tostring = AlyaNum.toString
 
 --- Metamethod for concatenating AlyaNum with another value.
-AlyaNum.__concat = function(self: AlyaNum, value: any): AlyaNum
-	return AlyaNum.toString(self) .. value
+AlyaNum.__concat = function(self: any, value: any): string
+	local left = type(self) == "table" and AlyaNum.toString(self) or tostring(self)
+	local right = type(value) == "table" and AlyaNum.toString(value) or tostring(value)
+	return left .. right
 end
 
 -- fun little things

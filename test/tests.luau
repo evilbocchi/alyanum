@@ -3,6 +3,7 @@ local harness = require("./harness")
 local describe = harness.describe
 local test = harness.test
 local expect = harness.expect
+type AlyaNumber = typeof(AlyaNum.new(0))
 
 describe("Construction", function()
 	test("fromNumber: creates from number", function()
@@ -320,6 +321,22 @@ describe("String conversion", function()
 end)
 
 describe("Leaderboard serialization", function()
+	local function makeNumber(multiplicand, exponent, tetrate, pentate, hexate, heptate): AlyaNumber
+		return AlyaNum.new({
+			sign = 1,
+			multiplicand = multiplicand,
+			exponent = exponent,
+			tetrate = tetrate,
+			pentate = pentate,
+			hexate = hexate,
+			heptate = heptate,
+		})
+	end
+
+	local function getMode(number: AlyaNumber): number
+		return math.floor(math.abs(number:toSingle()) / 1e16)
+	end
+
 	test("toSingle: preserves tetrate mode bands", function()
 		local modeSix = AlyaNum.new({
 			sign = 1,
@@ -342,6 +359,31 @@ describe("Leaderboard serialization", function()
 
 		expect(math.floor(modeSix:toSingle() / 1e16)):toBe(6)
 		expect(math.floor(modeSeven:toSingle() / 1e16)):toBe(7)
+	end)
+
+	test("toSingle: reaches every encoding mode", function()
+		local cases: { { number: AlyaNumber, mode: number } } = {
+			{ number = makeNumber(2, 0, 0, 0, 0, 0), mode = 0 },
+			{ number = makeNumber(2, 1, 0, 0, 0, 0), mode = 1 },
+			{ number = makeNumber(2, 2, 0, 0, 0, 0), mode = 2 },
+			{ number = makeNumber(2, 3, 0, 0, 0, 0), mode = 3 },
+			{ number = makeNumber(2, 4, 0, 0, 0, 0), mode = 4 },
+			{ number = makeNumber(2, 10000, 0, 0, 0, 0), mode = 5 },
+			{ number = makeNumber(2, 0, 1, 0, 0, 0), mode = 6 },
+			{ number = makeNumber(2, 0, 2, 0, 0, 0), mode = 7 },
+			{ number = makeNumber(2, 0, 3, 0, 0, 0), mode = 8 },
+			{ number = makeNumber(2, 0, 9999, 0, 0, 0), mode = 9 },
+			{ number = makeNumber(2, 0, 0, 1, 0, 0), mode = 10 },
+			{ number = makeNumber(2, 0, 0, 0, 1, 0), mode = 11 },
+			{ number = makeNumber(2, 0, 0, 0, 0, 1), mode = 12 },
+		}
+
+		for _, case in ipairs(cases) do
+			expect(getMode(case.number)):toBe(case.mode)
+			if case.mode >= 6 then
+				expect(getMode(AlyaNum.fromSingle(case.number:toSingle()))):toBe(case.mode)
+			end
+		end
 	end)
 end)
 
@@ -792,5 +834,258 @@ describe("Boundary conditions", function()
 
 	test("googol is 10^100", function()
 		expect(AlyaNum.GOOGOL):toEqual(AlyaNum.new(10):pow(100))
+	end)
+end)
+
+describe("Public API coverage", function()
+	test("fromScientific: parses uppercase large exponents", function()
+		local ok, uppercase = pcall(AlyaNum.fromScientific, "1E1000")
+		expect(ok):toBe(true)
+		if ok then
+			expect(uppercase):toEqual(AlyaNum.fromScientific("1e1000"))
+		end
+	end)
+
+	test("fromString: rejects unknown suffixes", function()
+		expect(AlyaNum.fromString("1XYZ"):toNumber()):toBe(0)
+		expect(AlyaNum.fromString("1Mfoo"):toNumber()):toBe(0)
+	end)
+
+	test("fromString: parses recognized suffix tiers", function()
+		local cases = {
+			{ suffix = "K", value = 1e3 },
+			{ suffix = "M", value = 1e6 },
+			{ suffix = "B", value = 1e9 },
+			{ suffix = "U", value = 1e6 },
+			{ suffix = "De", value = 1e33 },
+			{ suffix = "Ce", value = 1e303 },
+		}
+		for _, case in ipairs(cases) do
+			expect(AlyaNum.fromString("1" .. case.suffix):toNumber() / case.value):toBeCloseTo(1, 9)
+		end
+	end)
+
+	test("fromOmega: preserves every array field", function()
+		local number = AlyaNum.fromOmega({ 1, { 20, 3, 4, 5, 6, 7 } })
+		expect(number.sign):toBe(1)
+		expect(number.multiplicand):toBe(20)
+		expect(number.exponent):toBe(3)
+		expect(number.tetrate):toBe(4)
+		expect(number.pentate):toBe(5)
+		expect(number.hexate):toBe(6)
+		expect(number.heptate):toBe(7)
+	end)
+
+	test("external conversions: accept base-form objects", function()
+		local onoe = AlyaNum.fromOnoe({
+			sign = -1,
+			multiplicand = 20,
+			exponent = 3,
+			tetrate = 4,
+			pentate = 5,
+			hexate = 6,
+			heptate = 7,
+		})
+		local omega = AlyaNum.fromOmega({
+			sign = -1,
+			multiplicand = 20,
+			exponent = 3,
+			tetrate = 4,
+			pentate = 5,
+			hexate = 6,
+			heptate = 7,
+		})
+		expect(onoe):toEqual(omega)
+		expect(onoe.sign):toBe(-1)
+		expect(onoe.multiplicand):toBe(20)
+	end)
+
+	test("fromString: parses full array notation", function()
+		local number = AlyaNum.fromString("[1, 20, 3, 4, 5, 6, 7]")
+		expect(number):toEqual(AlyaNum.fromOmega({ 1, { 20, 3, 4, 5, 6, 7 } }))
+		expect(AlyaNum.fromString("[0, 9, 9, 9]"):toNumber()):toBe(0)
+	end)
+
+	test("toSerika: returns mantissa and exponent pairs", function()
+		local mantissa, exponent = AlyaNum.new(1234.5):toSerika()
+		expect(mantissa):toBeCloseTo(1.2345, 9)
+		expect(exponent):toBe(3)
+
+		local zeroMantissa, zeroExponent = AlyaNum.new(0):toSerika()
+		expect(zeroMantissa):toBe(0)
+		expect(zeroExponent):toBe(0)
+
+		local hugeMantissa, hugeExponent = AlyaNum.fromScientific("1e1000"):toSerika()
+		expect(hugeMantissa):toBe(1)
+		expect(hugeExponent):toBe(1000)
+	end)
+
+	test("logarithms: satisfy positive-domain identities", function()
+		expect(AlyaNum.new(100):log10()):toEqual(AlyaNum.new(2))
+		expect(AlyaNum.new(100):log(10)):toEqual(AlyaNum.new(2))
+		expect(AlyaNum.new(8):log(2)):toEqual(AlyaNum.new(3))
+		expect(AlyaNum.new(1):slog(10)):toEqual(AlyaNum.new(0))
+		expect(AlyaNum.new(10):slog(10)):toEqual(AlyaNum.new(1))
+		expect(AlyaNum.new(10):pentlog(10)):toEqual(AlyaNum.new(1))
+		expect(AlyaNum.new(10):hextlog(10)):toEqual(AlyaNum.new(1))
+	end)
+
+	test("hyperoperations: satisfy exact small identities", function()
+		expect(AlyaNum.new(3):tet(2)):toEqual(AlyaNum.new(27))
+		expect(AlyaNum.new(3):pent(2)):toEqual(AlyaNum.new(3):tet(3))
+		expect(AlyaNum.new(2):hext(2)):toEqual(AlyaNum.new(2):pent(2))
+
+		local zero = AlyaNum.new(0)
+		expect(zero:tet(1)):toEqual(AlyaNum.new(1))
+		expect(zero:tet(2)):toEqual(zero)
+		expect(zero:tet(3)):toEqual(AlyaNum.new(1))
+		expect(zero:pent(1)):toEqual(AlyaNum.new(1))
+		expect(zero:pent(2)):toEqual(zero)
+		expect(zero:hext(1)):toEqual(AlyaNum.new(1))
+		expect(zero:hext(2)):toEqual(zero)
+	end)
+
+	test("metamethods: support primitive-left operations", function()
+		local addOk, added = pcall(function()
+			return 3 + AlyaNum.new(2)
+		end)
+		expect(addOk):toBe(true)
+		if addOk then
+			expect(added:toNumber()):toBe(5)
+		end
+
+		local divideOk, divided = pcall(function()
+			return 6 / AlyaNum.new(2)
+		end)
+		expect(divideOk):toBe(true)
+		if divideOk then
+			expect(divided:toNumber()):toBe(3)
+		end
+
+		local concatOk, concatenated = pcall(function()
+			return "x" .. AlyaNum.new(3)
+		end)
+		expect(concatOk):toBe(true)
+		if concatOk then
+			expect(concatenated):toBe("x3")
+		end
+
+		expect(AlyaNum.new(3):lessThan(4)):toBe(true)
+		expect(AlyaNum.new(4):lessEquals(4)):toBe(true)
+	end)
+
+	test("formatting: exposes direct E notations", function()
+		local eValue = AlyaNum.new({
+			sign = 1,
+			multiplicand = 2,
+			exponent = 0,
+			tetrate = 1,
+			pentate = 0,
+			hexate = 0,
+			heptate = 0,
+		})
+		local hyperValue = AlyaNum.new({
+			sign = 1,
+			multiplicand = 2,
+			exponent = 0,
+			tetrate = 0,
+			pentate = 1,
+			hexate = 0,
+			heptate = 0,
+		})
+		expect(eValue:toEnt()):toBe("E(0)2")
+		expect(hyperValue:toHyperE()):toBe("E2#2")
+	end)
+
+	test("formatting: negative scientific output mirrors absolute output", function()
+		local value = AlyaNum.new(-1234.567)
+		expect(value:toScientific()):toBe("-" .. value:abs():toScientific())
+	end)
+
+	test("formatting: switches default abbreviation modes", function()
+		local value = AlyaNum.new(1e6)
+		AlyaNum.changeDefaultAbbreviation("scientific")
+		expect(value:toString()):toBe("1e6")
+		AlyaNum.changeDefaultAbbreviation("suffix")
+		expect(value:toString()):toBe("1M")
+	end)
+
+	test("formatting: supports zero decimal points", function()
+		local value = AlyaNum.new(1234567)
+		AlyaNum.changeDecimalPoints(0)
+		expect(value:toSuffix()):toBe("1M")
+		expect(value:toScientific()):toBe("1e6")
+		AlyaNum.changeDecimalPoints(2)
+	end)
+
+	test("logarithms: do not mutate high-level fields", function()
+		local slogValue = AlyaNum.new({
+			sign = 1,
+			multiplicand = 20,
+			exponent = 10,
+			tetrate = 0,
+			pentate = 0,
+			hexate = 0,
+			heptate = 0,
+		})
+		local pentlogValue = AlyaNum.new({
+			sign = 1,
+			multiplicand = 20,
+			exponent = 0,
+			tetrate = 10,
+			pentate = 0,
+			hexate = 0,
+			heptate = 0,
+		})
+		local hextlogValue = AlyaNum.new({
+			sign = 1,
+			multiplicand = 20,
+			exponent = 0,
+			tetrate = 0,
+			pentate = 10,
+			hexate = 0,
+			heptate = 0,
+		})
+
+		local slogOk = pcall(function()
+			slogValue:slog(10)
+		end)
+		local pentlogOk = pcall(function()
+			pentlogValue:pentlog(10)
+		end)
+		local hextlogOk = pcall(function()
+			hextlogValue:hextlog(10)
+		end)
+		expect(slogOk):toBe(true)
+		expect(pentlogOk):toBe(true)
+		expect(hextlogOk):toBe(true)
+		expect(slogValue.exponent):toBe(10)
+		expect(pentlogValue.tetrate):toBe(10)
+		expect(hextlogValue.pentate):toBe(10)
+	end)
+
+	test("serialization: fixes and restores base values", function()
+		local raw = {
+			sign = 1,
+			multiplicand = -2,
+			exponent = 0,
+			tetrate = 0,
+			pentate = 0,
+			hexate = 0,
+			heptate = 0,
+		}
+		expect(AlyaNum.fix(raw):toNumber()):toBe(-2)
+
+		local number = AlyaNum.new(42)
+		local base = number:toBaseAlya()
+		expect(getmetatable(base)):toBe(nil)
+		expect(AlyaNum.new(base)):toEqual(AlyaNum.new(42))
+	end)
+
+	test("construction: rejects both infinity signs", function()
+		local positiveOk = pcall(AlyaNum.new, math.huge)
+		local negativeOk = pcall(AlyaNum.new, -math.huge)
+		expect(positiveOk):toBe(false)
+		expect(negativeOk):toBe(false)
 	end)
 end)
