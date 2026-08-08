@@ -36,11 +36,7 @@
     },
     "devDependencies": {
         "@rbxts/compiler-types": "^3.0.0-types.0",
-        "@rbxts/types": "^1.0.941",
-        "@typescript-eslint/eslint-plugin": "^8.65.0",
-        "@typescript-eslint/parser": "^8.65.0",
-        "eslint": "^9",
-        "eslint-plugin-roblox-ts": "^1.4.1",
+        "@rbxts/types": "^1",
         "prettier": "^3.9.6",
         "rkkit": "^0.0.3",
         "roblox-ts": "^3.0.0",
