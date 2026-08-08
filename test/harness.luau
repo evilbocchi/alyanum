@@ -56,22 +56,22 @@ local function expectationError(matcher, actual, expected, message)
 	error(message or ("Expected " .. formatValue(actual) .. " " .. matcher .. " " .. formatValue(expected)), 3)
 end
 
-local function expect(actual)
+local function expect<T>(actual: T)
 	local expectation = {}
 
-	function expectation:toBe(expected, message)
+	function expectation:toBe(expected: unknown, message)
 		if actual ~= expected then
 			expectationError("to be", actual, expected, message)
 		end
 	end
 
-	function expectation:toEqual(expected, message)
+	function expectation:toEqual(expected: T?, message)
 		if not valuesEqual(actual, expected) then
 			expectationError("to equal", actual, expected, message)
 		end
 	end
 
-	function expectation:toBeCloseTo(expected, precision, message)
+	function expectation:toBeCloseTo(expected: T?, precision: number, message)
 		precision = precision or 2
 		local epsilon = 10 ^ -precision
 		if math.abs(actual - expected) >= epsilon then
@@ -79,25 +79,25 @@ local function expect(actual)
 		end
 	end
 
-	function expectation:toBeGreaterThan(expected, message)
+	function expectation:toBeGreaterThan(expected: T?, message)
 		if not compareValues(actual, expected, "moreThan") then
 			expectationError("to be greater than", actual, expected, message)
 		end
 	end
 
-	function expectation:toBeLessThan(expected, message)
+	function expectation:toBeLessThan(expected: T?, message)
 		if not compareValues(actual, expected, "lessThan") then
 			expectationError("to be less than", actual, expected, message)
 		end
 	end
 
-	function expectation:toBeGreaterThanOrEqual(expected, message)
+	function expectation:toBeGreaterThanOrEqual(expected: T?, message)
 		if not compareValues(actual, expected, "moreEquals") then
 			expectationError("to be greater than or equal to", actual, expected, message)
 		end
 	end
 
-	function expectation:toBeLessThanOrEqual(expected, message)
+	function expectation:toBeLessThanOrEqual(expected: T?, message)
 		if not compareValues(actual, expected, "lessEquals") then
 			expectationError("to be less than or equal to", actual, expected, message)
 		end

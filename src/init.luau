@@ -547,12 +547,15 @@ end
 function root(self: AlyaNum, number: AlyaNum): AlyaNum
 	if equalsOne(number) then
 		return self
-	elseif number.sign == -1 or self.sign == -1 then
+	elseif number.sign == -1 then
 		return reciprocal(root(self, unary(number)))
+	elseif self.sign == -1 then
+		if isInteger(number) and equals(mod(number, TWO), ONE) then
+			return mutableUnary(root(abs(self), number))
+		end
+		return ZERO
 	elseif lessThan(number, ONE) then
 		return pow(self, reciprocal(number))
-	elseif number.sign == -1 and isInteger(number) and equals(mod(number, TWO), ONE) then
-		return mutableUnary(root(unary(self), number))
 	elseif equalsOne(self) then
 		return ONE
 	elseif self.sign == 0 then
@@ -575,13 +578,11 @@ function mod(self: AlyaNum, number: AlyaNum): AlyaNum
 	if self.sign == 0 then
 		return ZERO
 	end
-	if self.sign * number.sign == -1 then
-		return mutableUnary(mod(abs(self), abs(number)))
-	end
+	local absoluteNumber = abs(number)
 	if self.sign == -1 then
-		return mod(abs(self), abs(number))
+		return mutableUnary(mod(abs(self), absoluteNumber))
 	end
-	return add(self, mutableUnary(mul(floor(div(self, number)), number))) -- x - (floor(x / y) * x) = x % y
+	return add(self, mutableUnary(mul(floor(div(self, absoluteNumber)), absoluteNumber)))
 end
 
 function mutableLog10(self: AlyaNum): AlyaNum
@@ -1142,21 +1143,10 @@ end
 function compare(self: AlyaNum, number: AlyaNum): number
 	if self.sign ~= number.sign then
 		return self.sign > number.sign and 1 or -1
-	elseif self.heptate ~= number.heptate then
-		return self.heptate > number.heptate and 1 or -1
-	elseif self.hexate ~= number.hexate then
-		return self.hexate > number.hexate and 1 or -1
-	elseif self.pentate ~= number.pentate then
-		return self.pentate > number.pentate and 1 or -1
-	elseif self.tetrate ~= number.tetrate then
-		return self.tetrate > number.tetrate and 1 or -1
-	elseif self.exponent ~= number.exponent then
-		return self.exponent > number.exponent and 1 or -1
-	elseif self.multiplicand ~= number.multiplicand then
-		return self.multiplicand > number.multiplicand and 1 or -1
-	else
-		return 0
 	end
+
+	local result = absCompare(self, number)
+	return self.sign == -1 and -result or result
 end
 
 function absCompare(self: AlyaNum, number: AlyaNum): number
@@ -1512,6 +1502,9 @@ end
 --- @param self AlyaNum
 --- @returns string
 function toEChain(self: AlyaNum): string
+	if self.sign == -1 then
+		return "-" .. toEChain(abs(self))
+	end
 	if self.tetrate > 0 or self.exponent > 10 then
 		return toEnt(self)
 	end
