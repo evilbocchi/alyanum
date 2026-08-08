@@ -6,6 +6,7 @@
 
 local AlyaNum = require("./src")
 local EternityNum = require("./bench/EternityNum")
+local OmegaNum = require("./bench/OmegaNum")
 
 -- Benchmark configuration
 local ITERATIONS = 200000 -- 200K operations as mentioned in the chart
@@ -55,6 +56,22 @@ for category, numbers in negativeTestNumbers do
 	negativeTestEternityNum[category] = {}
 	for i, num in numbers do
 		negativeTestEternityNum[category][i] = EternityNum.fromNumber(num)
+	end
+end
+
+local testOmegaNum = {}
+for category, numbers in testNumbers do
+	testOmegaNum[category] = {}
+	for i, num in numbers do
+		testOmegaNum[category][i] = OmegaNum.fromNumber(num)
+	end
+end
+
+local negativeTestOmegaNum = {}
+for category, numbers in negativeTestNumbers do
+	negativeTestOmegaNum[category] = {}
+	for i, num in numbers do
+		negativeTestOmegaNum[category][i] = OmegaNum.fromNumber(num)
 	end
 end
 
@@ -163,6 +180,38 @@ local function createEternityBenchmarks(data, power: number?)
 	}
 end
 
+
+local function createOmegaBenchmarks(data, power: number?)
+	local left = data.medium[1]
+	local right = data.medium[2]
+	local smallValue = data.small[1]
+	power = power or 2.5
+
+	return {
+		addition = function()
+			return function()
+				local _ = OmegaNum.add(left, right)
+			end
+		end,
+		multiplication = function()
+			return function()
+				local _ = OmegaNum.mul(left, right)
+			end
+		end,
+		exponentiation = function()
+			return function()
+				local _ = OmegaNum.pow(smallValue, power)
+			end
+		end,
+		comparison = function()
+			return function()
+				local _ = OmegaNum.le(left, right)
+				local _ = OmegaNum.me(left, right)
+				local _ = OmegaNum.eq(left, right)
+			end
+		end,
+	}
+end
 local operationOrder = {
 	{ key = "addition", label = "Addition", dataset = "positive", benchmarkKey = "addition" },
 	{ key = "multiplication", label = "Multiplication", dataset = "positive", benchmarkKey = "multiplication" },
@@ -207,6 +256,14 @@ local competitors = {
 		benchmarks = {
 			positive = createEternityBenchmarks(testEternityNum),
 			negative = createEternityBenchmarks(negativeTestEternityNum, 3),
+		},
+	},
+	{
+		key = "omega",
+		label = "OmegaNum",
+		benchmarks = {
+			positive = createOmegaBenchmarks(testOmegaNum),
+			negative = createOmegaBenchmarks(negativeTestOmegaNum, 3),
 		},
 	},
 }
