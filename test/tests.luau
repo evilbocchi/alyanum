@@ -627,6 +627,443 @@ describe("Mathematical properties", function()
 	end)
 end)
 
+describe("Mathematical property matrix", function()
+	local function expectExact(actual: AlyaNumber, expected: number, message: string?)
+		expect(actual):toEqual(AlyaNum.new(expected), message)
+	end
+
+	local function expectClose(actual: AlyaNumber, expected: number, precision: number?, message: string?)
+		expect(actual:toNumber()):toBeCloseTo(expected, precision or 9, message)
+	end
+
+	test("addition has a right identity", function()
+		expectExact(AlyaNum.new(17):add(0), 17)
+	end)
+
+	test("addition has a left identity", function()
+		expectExact(AlyaNum.new(17):add(0), 17)
+	end)
+
+	test("addition is commutative for positive values", function()
+		expect(AlyaNum.new(14):add(29)):toEqual(AlyaNum.new(29):add(14))
+	end)
+
+	test("addition is commutative for mixed signs", function()
+		expect(AlyaNum.new(-14):add(29)):toEqual(AlyaNum.new(29):add(-14))
+	end)
+
+	test("addition is associative for positive values", function()
+		expect(AlyaNum.new(2):add(3):add(5)):toEqual(AlyaNum.new(2):add(AlyaNum.new(3):add(5)))
+	end)
+
+	test("addition is associative for mixed signs", function()
+		expect(AlyaNum.new(-8):add(13):add(-4)):toEqual(AlyaNum.new(-8):add(AlyaNum.new(13):add(-4)))
+	end)
+
+	test("adding an additive inverse gives zero", function()
+		expectExact(AlyaNum.new(31):add(-31), 0)
+	end)
+
+	test("subtraction has a right zero", function()
+		expectExact(AlyaNum.new(-31):sub(0), -31)
+	end)
+
+	test("subtracting a number from itself gives zero", function()
+		expectExact(AlyaNum.new(31):sub(31), 0)
+	end)
+
+	test("addition followed by subtraction cancels", function()
+		expect(AlyaNum.new(19):add(8):sub(8)):toEqual(AlyaNum.new(19))
+	end)
+
+	test("subtraction followed by addition cancels", function()
+		expect(AlyaNum.new(19):sub(8):add(8)):toEqual(AlyaNum.new(19))
+	end)
+
+	test("multiplication has a right identity", function()
+		expectExact(AlyaNum.new(-23):mul(1), -23)
+	end)
+
+	test("multiplication has a left identity", function()
+		expectExact(AlyaNum.new(1):mul(-23), -23)
+	end)
+
+	test("multiplication is commutative", function()
+		expect(AlyaNum.new(-7):mul(12)):toEqual(AlyaNum.new(12):mul(-7))
+	end)
+
+	test("multiplication is associative", function()
+		expect(AlyaNum.new(2):mul(3):mul(7)):toEqual(AlyaNum.new(2):mul(AlyaNum.new(3):mul(7)))
+	end)
+
+	test("zero annihilates multiplication on the left", function()
+		expectExact(AlyaNum.new(0):mul(-123), 0)
+	end)
+
+	test("zero annihilates multiplication on the right", function()
+		expectExact(AlyaNum.new(-123):mul(0), 0)
+	end)
+
+	test("multiplication distributes over addition", function()
+		expect(AlyaNum.new(7):mul(AlyaNum.new(3):add(5))):toEqual(AlyaNum.new(7):mul(3):add(AlyaNum.new(7):mul(5)))
+	end)
+
+	test("multiplication distributes over subtraction", function()
+		expect(AlyaNum.new(7):mul(AlyaNum.new(13):sub(5))):toEqual(AlyaNum.new(7):mul(13):sub(AlyaNum.new(7):mul(5)))
+	end)
+
+	test("multiplication preserves the product of signs", function()
+		expectExact(AlyaNum.new(-6):mul(-9), 54)
+	end)
+
+	test("division has a right identity", function()
+		expectExact(AlyaNum.new(-44):div(1), -44)
+	end)
+
+	test("a nonzero number divided by itself is one", function()
+		expectExact(AlyaNum.new(-44):div(-44), 1)
+	end)
+
+	test("multiplication followed by division cancels", function()
+		expect(AlyaNum.new(12):mul(7):div(7)):toEqual(AlyaNum.new(12))
+	end)
+
+	test("division followed by multiplication cancels for exact quotients", function()
+		expect(AlyaNum.new(84):div(7):mul(7)):toEqual(AlyaNum.new(84))
+	end)
+
+	test("reciprocal is a multiplicative inverse", function()
+		expectClose(AlyaNum.new(8):mul(AlyaNum.new(8):reciprocal()), 1)
+	end)
+
+	test("modulo by itself is zero", function()
+		expectExact(AlyaNum.new(-44):mod(-44), 0)
+	end)
+
+	test("positive modulo is bounded by its divisor", function()
+	local remainder = AlyaNum.new(29):mod(7)
+	expect(remainder):toBeGreaterThanOrEqual(AlyaNum.new(0))
+	expect(remainder):toBeLessThan(AlyaNum.new(7))
+	end)
+
+	test("negative modulo keeps the dividend sign", function()
+		expectExact(AlyaNum.new(-29):mod(7), -1)
+	end)
+
+	test("modulo ignores the divisor sign", function()
+		expect(AlyaNum.new(29):mod(-7)):toEqual(AlyaNum.new(29):mod(7))
+	end)
+
+	test("modulo reconstructs a positive dividend", function()
+	local value = AlyaNum.new(29)
+	local divisor = AlyaNum.new(7)
+	local quotient = value:div(divisor):floor()
+	expect(quotient:mul(divisor):add(value:mod(divisor))):toEqual(value)
+	end)
+
+	test("zero is the additive identity under operators", function()
+	expect((AlyaNum.new(0) + AlyaNum.new(26))):toEqual(AlyaNum.new(26))
+	end)
+
+	test("one is the multiplicative identity under operators", function()
+	expect((AlyaNum.new(1) * AlyaNum.new(-26))):toEqual(AlyaNum.new(-26))
+	end)
+
+	test("power has a zero exponent identity", function()
+	expect(AlyaNum.new(26):pow(0)):toEqual(AlyaNum.new(1))
+	end)
+
+	test("power has a unit exponent identity", function()
+	expect(AlyaNum.new(-26):pow(1)):toEqual(AlyaNum.new(-26))
+	end)
+
+	test("powers of a positive base add exponents", function()
+	local base = AlyaNum.new(3)
+	expect(base:pow(4):mul(base:pow(2))):toEqual(base:pow(6))
+	end)
+
+	test("powers of a positive base multiply exponents", function()
+	local base = AlyaNum.new(2)
+	expect(base:pow(3):pow(2)):toEqual(base:pow(6))
+	end)
+
+	test("an even power removes a negative base sign", function()
+		expectExact(AlyaNum.new(-3):pow(4), 81)
+	end)
+
+	test("an odd power preserves a negative base sign", function()
+		expectExact(AlyaNum.new(-3):pow(3), -27)
+	end)
+
+	test("positive roots invert perfect powers", function()
+		expectClose(AlyaNum.new(81):root(4), 3)
+	end)
+
+	test("raising a perfect root restores the radicand", function()
+		expectClose(AlyaNum.new(3):root(1):pow(1), 3)
+	end)
+
+	test("odd roots preserve negative signs", function()
+		expectClose(AlyaNum.new(-125):root(3), -5)
+	end)
+
+	test("compare is reflexive", function()
+		expect(AlyaNum.new(37):compare(37)):toBe(0)
+	end)
+
+	test("compare is antisymmetric", function()
+		expect(AlyaNum.new(-4):compare(12)):toBe(-1)
+		expect(AlyaNum.new(12):compare(-4)):toBe(1)
+	end)
+
+	test("comparison has a trichotomy for less values", function()
+	local value = AlyaNum.new(4)
+	expect(value:lt(9)):toBe(true)
+	expect(value:equals(9)):toBe(false)
+	expect(value:mt(9)):toBe(false)
+	end)
+
+	test("comparison has a trichotomy for equal values", function()
+	local value = AlyaNum.new(9)
+	expect(value:lt(9)):toBe(false)
+	expect(value:equals(9)):toBe(true)
+	expect(value:mt(9)):toBe(false)
+	end)
+
+	test("comparison has a trichotomy for greater values", function()
+	local value = AlyaNum.new(12)
+	expect(value:lt(9)):toBe(false)
+	expect(value:equals(9)):toBe(false)
+	expect(value:mt(9)):toBe(true)
+	end)
+
+	test("less-than is transitive", function()
+	local a, b, c = AlyaNum.new(2), AlyaNum.new(5), AlyaNum.new(9)
+	expect(a:lt(b) and b:lt(c) and a:lt(c)):toBe(true)
+	end)
+
+	test("less-than-or-equal is transitive", function()
+	local a, b, c = AlyaNum.new(2), AlyaNum.new(5), AlyaNum.new(9)
+	expect(a:le(b) and b:le(c) and a:le(c)):toBe(true)
+	end)
+
+	test("equals agrees with compare", function()
+	local a, b = AlyaNum.new(15), AlyaNum.new(15)
+	expect(a:equals(b)):toBe(a:compare(b) == 0)
+	end)
+
+	test("min selects the smaller value", function()
+	expect(AlyaNum.new(12):min(-4)):toEqual(AlyaNum.new(-4))
+	end)
+
+	test("max selects the larger value", function()
+	expect(AlyaNum.new(12):max(-4)):toEqual(AlyaNum.new(12))
+	end)
+
+	test("minmax returns values in ascending order", function()
+	local minimum, maximum = AlyaNum.new(12):minmax(-4)
+	expect(minimum):toEqual(AlyaNum.new(-4))
+	expect(maximum):toEqual(AlyaNum.new(12))
+	end)
+
+	test("absolute value removes a negative sign", function()
+		expect(AlyaNum.new(-37):abs()):toEqual(AlyaNum.new(37))
+	end)
+
+	test("absolute value is idempotent", function()
+	local value = AlyaNum.new(-37)
+	expect(value:abs():abs()):toEqual(value:abs())
+	end)
+
+	test("unary negation is an involution", function()
+	local value = AlyaNum.new(-37)
+	expect(value:unary():unary()):toEqual(value)
+	end)
+
+	test("a value plus its unary negation is zero", function()
+		expect(AlyaNum.new(-37):add(AlyaNum.new(-37):unary())):toEqual(AlyaNum.new(0))
+	end)
+
+	test("absolute value preserves multiplication magnitude", function()
+	local productMagnitude = AlyaNum.new(-6):mul(7):abs()
+	local absoluteProduct = AlyaNum.new(-6):abs():mul(AlyaNum.new(7):abs())
+		expect(productMagnitude):toEqual(absoluteProduct)
+	end)
+
+	test("absolute comparison orders by magnitude", function()
+		expect(AlyaNum.new(-12):abs():moreThan(9)):toBe(true)
+	end)
+
+	test("negative values precede zero", function()
+		expect(AlyaNum.new(-1):lt(0)):toBe(true)
+	end)
+
+	test("zero precedes positive values", function()
+		expect(AlyaNum.new(0):lt(1)):toBe(true)
+	end)
+
+	test("floor is a lower bound", function()
+	local value = AlyaNum.new(7.25)
+	expect(value:floor()):toBeLessThanOrEqual(value)
+	end)
+
+	test("ceil is an upper bound", function()
+	local value = AlyaNum.new(7.25)
+	expect(value:ceil()):toBeGreaterThanOrEqual(value)
+	end)
+
+	test("floor and ceil bracket a value", function()
+	local value = AlyaNum.new(-7.25)
+	expect(value:floor()):toBeLessThanOrEqual(value)
+	expect(value:ceil()):toBeGreaterThanOrEqual(value)
+	end)
+
+	test("floor returns an integer", function()
+	expect(AlyaNum.new(-7.25):floor():isInteger()):toBe(true)
+	end)
+
+	test("ceil returns an integer", function()
+		expect(AlyaNum.new(7.25):ceil():isInteger()):toBe(true)
+	end)
+
+	test("round chooses the nearest integer below one half", function()
+		expectExact(AlyaNum.new(7.49):round(), 7)
+	end)
+
+	test("round chooses the nearest integer above one half", function()
+		expectExact(AlyaNum.new(7.5):round(), 8)
+	end)
+
+	test("integers are fixed by floor", function()
+	local value = AlyaNum.new(-18)
+		expect(value:floor()):toEqual(value)
+	end)
+
+	test("integers are fixed by ceil", function()
+	local value = AlyaNum.new(18)
+		expect(value:ceil()):toEqual(value)
+	end)
+
+	test("log10 maps ten powers to their exponents", function()
+		expect(AlyaNum.new(10):pow(4):log10()):toEqual(AlyaNum.new(4))
+	end)
+
+	test("logarithm changes base consistently", function()
+		expectClose(AlyaNum.new(81):log(3), 4)
+	end)
+
+	test("log10 of one is zero", function()
+		expect(AlyaNum.new(1):log10()):toEqual(AlyaNum.new(0))
+	end)
+
+	test("log10 is strictly increasing on positive values", function()
+		expect(AlyaNum.new(10):log10()):toBeLessThan(AlyaNum.new(100):log10())
+	end)
+
+	test("log10 converts products into sums", function()
+	local left, right = AlyaNum.new(100), AlyaNum.new(1000)
+		expect(left:mul(right):log10()):toEqual(left:log10():add(right:log10()))
+	end)
+
+	test("log10 converts quotients into differences", function()
+	local numerator, denominator = AlyaNum.new(1000), AlyaNum.new(10)
+		expect(numerator:div(denominator):log10()):toEqual(numerator:log10():sub(denominator:log10()))
+	end)
+
+	test("factorial maps zero to one", function()
+		expect(AlyaNum.new(0):factorial()):toEqual(AlyaNum.new(1))
+	end)
+
+	test("factorial maps one to one", function()
+		expect(AlyaNum.new(1):factorial()):toEqual(AlyaNum.new(1))
+	end)
+
+	test("factorial satisfies its recurrence", function()
+	local value = AlyaNum.new(6)
+		expect(value:factorial()):toEqual(value:mul(value:sub(1):factorial()))
+	end)
+
+	test("factorial is strictly increasing after one", function()
+		expect(AlyaNum.new(7):factorial()):toBeGreaterThan(AlyaNum.new(6):factorial())
+	end)
+
+	test("factorial results are nonnegative", function()
+		expect(AlyaNum.new(8):factorial()):toBeGreaterThanOrEqual(AlyaNum.new(0))
+	end)
+
+	test("factorial results are integers for small inputs", function()
+		expect(AlyaNum.new(8):factorial():isInteger()):toBe(true)
+	end)
+
+	test("tetration has a height-one identity", function()
+		expect(AlyaNum.new(3):tet(1)):toEqual(AlyaNum.new(3))
+	end)
+
+	test("pentation has a height-one identity", function()
+		expect(AlyaNum.new(3):pent(1)):toEqual(AlyaNum.new(3))
+	end)
+
+	test("hexation has a height-one identity", function()
+		expect(AlyaNum.new(3):hext(1)):toEqual(AlyaNum.new(3))
+	end)
+
+	test("tetration height two is self-power", function()
+		expect(AlyaNum.new(3):tet(2)):toEqual(AlyaNum.new(3):pow(3))
+	end)
+
+	test("tetration grows with height for base two", function()
+		expect(AlyaNum.new(2):tet(3)):toBeGreaterThan(AlyaNum.new(2):tet(2))
+	end)
+
+	test("pentation height two is tetration at base height", function()
+		expect(AlyaNum.new(3):pent(2)):toEqual(AlyaNum.new(3):tet(3))
+	end)
+
+	test("pentation grows with height for base two", function()
+		expect(AlyaNum.new(2):pent(3)):toBeGreaterThan(AlyaNum.new(2):pent(2))
+	end)
+
+	test("hexation height two is pentation at base height", function()
+		expect(AlyaNum.new(2):hext(2)):toEqual(AlyaNum.new(2):pent(2))
+	end)
+
+	test("one is fixed by every tested hyperoperation", function()
+	local one = AlyaNum.new(1)
+	expect(one:tet(4)):toEqual(one)
+	expect(one:pent(4)):toEqual(one)
+	expect(one:hext(4)):toEqual(one)
+	end)
+
+	test("number construction preserves ordinary values", function()
+	local value = -123.456
+		expectClose(AlyaNum.new(value), value)
+	end)
+
+	test("decimal string construction preserves ordinary values", function()
+		expectClose(AlyaNum.fromString("-123.456"), -123.456)
+	end)
+
+	test("scientific construction preserves ordinary values", function()
+		expectClose(AlyaNum.fromScientific("1.25e4"), 12500)
+	end)
+
+	test("base serialization is an exact round trip", function()
+	local value = AlyaNum.new(-987654)
+		expect(AlyaNum.new(value:toBaseAlya())):toEqual(value)
+	end)
+
+	test("Omega serialization is an exact round trip", function()
+	local value = AlyaNum.new(987654)
+	local restored = AlyaNum.fromOmega({ value.sign, { value.multiplicand, value.exponent, value.tetrate, value.pentate, value.hexate, value.heptate } })
+		expect(restored):toEqual(value)
+	end)
+
+	test("scientific formatting parses back to the same number", function()
+		local value = AlyaNum.new(123000)
+		expect(AlyaNum.fromScientific(value:toScientific())):toEqual(value)
+	end)
+end)
+
 describe("Large numbers", function()
 	test("large: basic operations with googol", function()
 		local googol = AlyaNum.new(10):pow(AlyaNum.new(100))

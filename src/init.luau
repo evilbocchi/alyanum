@@ -697,6 +697,16 @@ function log10(self: AlyaNum): AlyaNum
 	if self.sign <= 0 then
 		return ZERO
 	end
+	if
+		self.multiplicand == 1
+		and self.exponent == 0
+		and self.tetrate == 0
+		and self.pentate == 0
+		and self.hexate == 0
+		and self.heptate == 0
+	then
+		return ZERO
+	end
 	return setmetatable(self.exponent == 0 and {
 		sign = self.sign,
 		multiplicand = math.log10(self.multiplicand),
