@@ -241,25 +241,38 @@ function fix(number: BaseAlyaNum): AlyaNum
 	return setmetatable(number, AlyaNum)
 end
 
+function newNumber(number: number): AlyaNum
+	if number == HUGE or number == -HUGE then
+		error("cannot parse math.huge")
+	end
+
+	local sign = math.sign(number)
+	local multiplicand = math.abs(number)
+	local exponent = 0
+	if sign == 0 then
+		multiplicand = 0
+	elseif multiplicand >= FLOAT64_SAFE_LIMIT then
+		multiplicand = math.log10(multiplicand)
+		exponent = 1
+	end
+
+	return setmetatable({
+		sign = sign,
+		multiplicand = multiplicand,
+		exponent = exponent,
+		tetrate = 0,
+		pentate = 0,
+		hexate = 0,
+		heptate = 0,
+	}, AlyaNum)
+end
+
 --- Create a new AlyaNum object from a primitive number or BaseAlyaNum.
 --- @param number number | BaseAlyaNum
 --- @returns AlyaNum
 function AlyaNum.new(number: number | BaseAlyaNum): AlyaNum
 	if type(number) == "number" then
-		if number == HUGE or number == -HUGE then
-			error("cannot parse math.huge")
-			-- dont use AlyaNum.new for numbers larger than 10^308;
-			-- either split it into two smaller numbers e.g. AlyaNum.new(10):pow(900) or use AlyaNum.fromScientific
-		end
-		return fix({
-			sign = math.sign(number),
-			multiplicand = math.abs(number),
-			exponent = 0,
-			tetrate = 0,
-			pentate = 0,
-			hexate = 0,
-			heptate = 0,
-		})
+		return newNumber(number)
 	end
 	if getmetatable(number) ~= AlyaNum then
 		return setmetatable(number :: BaseAlyaNum, AlyaNum)
@@ -466,6 +479,31 @@ function add(self: AlyaNum, number: AlyaNum): AlyaNum
 	})
 end
 
+function subtract(self: AlyaNum, number: AlyaNum): AlyaNum
+	if
+		self.tetrate == 0
+		and self.pentate == 0
+		and self.hexate == 0
+		and self.heptate == 0
+		and number.tetrate == 0
+		and number.pentate == 0
+		and number.hexate == 0
+		and number.heptate == 0
+		and self.exponent < 2
+		and number.exponent < 2
+		and (self.exponent == 0 or self.multiplicand <= LOG10_FLOAT64_LIMIT)
+		and (number.exponent == 0 or number.multiplicand <= LOG10_FLOAT64_LIMIT)
+	then
+		local left = self.exponent == 1 and math.pow(10, self.multiplicand) or self.multiplicand
+		local right = number.exponent == 1 and math.pow(10, number.multiplicand) or number.multiplicand
+		local difference = self.sign * left - number.sign * right
+		if difference > -FLOAT64_LIMIT and difference < FLOAT64_LIMIT then
+			return newNumber(difference)
+		end
+	end
+	return add(self, unary(number))
+end
+
 --- Multiply two AlyaNum objects. Macro for AlyaNum * AlyaNum.
 --- @param self AlyaNum
 --- @param number AlyaNum
@@ -525,6 +563,27 @@ function div(self: AlyaNum, number: AlyaNum): AlyaNum
 		return ZERO
 	elseif equalsOne(number) then
 		return self
+	end
+	if
+		self.tetrate == 0
+		and self.pentate == 0
+		and self.hexate == 0
+		and self.heptate == 0
+		and number.tetrate == 0
+		and number.pentate == 0
+		and number.hexate == 0
+		and number.heptate == 0
+		and self.exponent < 2
+		and number.exponent < 2
+		and (self.exponent == 0 or self.multiplicand <= LOG10_FLOAT64_LIMIT)
+		and (number.exponent == 0 or number.multiplicand <= LOG10_FLOAT64_LIMIT)
+	then
+		local left = self.exponent == 1 and math.pow(10, self.multiplicand) or self.multiplicand
+		local right = number.exponent == 1 and math.pow(10, number.multiplicand) or number.multiplicand
+		local quotient = left / right
+		if quotient < FLOAT64_LIMIT then
+			return newNumber(self.sign * number.sign * quotient)
+		end
 	end
 
 	if absCompare(self, number) == 0 then
@@ -671,6 +730,27 @@ end
 function mod(self: AlyaNum, number: AlyaNum): AlyaNum
 	if self.sign == 0 then
 		return ZERO
+	end
+	if number.sign == 0 then
+		return self
+	end
+	if
+		self.tetrate == 0
+		and self.pentate == 0
+		and self.hexate == 0
+		and self.heptate == 0
+		and number.tetrate == 0
+		and number.pentate == 0
+		and number.hexate == 0
+		and number.heptate == 0
+		and self.exponent < 2
+		and number.exponent < 2
+		and (self.exponent == 0 or self.multiplicand <= LOG10_FLOAT64_LIMIT)
+		and (number.exponent == 0 or number.multiplicand <= LOG10_FLOAT64_LIMIT)
+	then
+		local left = self.exponent == 1 and math.pow(10, self.multiplicand) or self.multiplicand
+		local right = number.exponent == 1 and math.pow(10, number.multiplicand) or number.multiplicand
+		return newNumber(self.sign * math.fmod(left, right))
 	end
 	local absoluteNumber = abs(number)
 	if self.sign == -1 then
@@ -1636,11 +1716,11 @@ function toSerika(self: AlyaNum): (number, number)
 		return 10, HUGE
 	end
 	if self.exponent == 0 then
-		mantissa = (self.multiplicand / math.pow(10, math.floor(math.log10(self.multiplicand)))) * self.sign
 		exponent = math.floor(math.log10(self.multiplicand))
+		mantissa = (self.multiplicand / math.pow(10, exponent)) * self.sign
 	elseif self.exponent == 1 then
-		mantissa = math.pow(10, self.multiplicand - math.floor(self.multiplicand)) * self.sign
 		exponent = math.floor(self.multiplicand)
+		mantissa = math.pow(10, self.multiplicand - exponent) * self.sign
 	elseif self.exponent == 2 and self.multiplicand <= 308 then
 		local exp = math.pow(10, self.multiplicand)
 		mantissa = math.pow(10, (exp - math.floor(exp))) * self.sign
@@ -1653,10 +1733,11 @@ end
 
 -- imported from serikanum
 function serikaNumEnforceDP(mantissa: number, exponent: number): string
+	local power = exponent == 0 and 1 or exponent == 1 and 10 or 100
 	if DECIMAL_POINTS <= 0 then
-		return tostring(math.round(mantissa * math.pow(10, exponent)))
+		return tostring(math.round(mantissa * power))
 	else
-		return tostring(math.round(mantissa * math.pow(10, exponent) * DP_OFFSET) / DP_OFFSET)
+		return tostring(math.round(mantissa * power * DP_OFFSET) / DP_OFFSET)
 	end
 end
 
@@ -1876,15 +1957,38 @@ function toString(self: AlyaNum): string
 		return "0"
 	elseif self.sign == -1 then
 		return "-" .. toString(abs(self))
-	elseif lessThan(abs(self), MAX_FRACTIONAL) then
+	elseif
+		self.exponent == 0
+		and self.tetrate == 0
+		and self.pentate == 0
+		and self.hexate == 0
+		and self.heptate == 0
+		and self.multiplicand < MAX_FRACTIONAL.multiplicand
+	then
 		return "1 / " .. toSuffix(div(ONE, self))
-	elseif lessThan(self, MAX_SUFFIX) and DEFAULT_ABBREVIATION == "suffix" then
-		return toSuffix(self)
-	elseif lessThan(self, MAX_SCIENTIFIC) then
+	elseif
+		DEFAULT_ABBREVIATION == "suffix"
+		and self.tetrate == 0
+		and self.pentate == 0
+		and self.hexate == 0
+		and self.heptate == 0
+		and (self.exponent == 0 or (self.exponent == 1 and self.multiplicand < MAX_SUFFIX.multiplicand))
+	then
+		local exponent: number
+		local mantissa: number
+		if self.exponent == 0 then
+			exponent = math.floor(math.log10(self.multiplicand))
+			mantissa = self.multiplicand / math.pow(10, exponent)
+		else
+			exponent = math.floor(self.multiplicand)
+			mantissa = math.pow(10, self.multiplicand - exponent)
+		end
+		return serikaNumToSuffix(mantissa, exponent)
+	elseif absLessThan(self, MAX_SCIENTIFIC) then
 		return toScientific(self)
-	elseif lessThan(self, MAX_E_CHAIN) then
+	elseif absLessThan(self, MAX_E_CHAIN) then
 		return toEChain(self)
-	elseif lessThan(self, MAX_ENT) then
+	elseif absLessThan(self, MAX_ENT) then
 		return toEnt(self)
 	else
 		return toHyperE(self)
@@ -2333,7 +2437,7 @@ end
 --- Subtracts the specified number from this AlyaNum and returns the result as a new AlyaNum.
 --- @param number The number to subtract.
 AlyaNum.sub = function(self: AlyaNum, number: Number)
-	return add(AlyaNum.new(self), unary(AlyaNum.new(number)))
+	return subtract(AlyaNum.new(self), AlyaNum.new(number))
 end
 
 --- Multiplies this AlyaNum by the specified number and returns the result as a new AlyaNum.
@@ -2573,6 +2677,49 @@ AlyaNum.toHyperE = function(self: Number)
 	return toHyperE(AlyaNum.new(self))
 end
 
+local function metamethodValue(value: any): AlyaNum
+	if type(value) == "number" then
+		return newNumber(value)
+	end
+	return value
+end
+
+local function addMetamethod(self: any, number: any): AlyaNum
+	return add(metamethodValue(self), metamethodValue(number))
+end
+
+local function subMetamethod(self: any, number: any): AlyaNum
+	return subtract(metamethodValue(self), metamethodValue(number))
+end
+
+local function mulMetamethod(self: any, number: any): AlyaNum
+	return mul(metamethodValue(self), metamethodValue(number))
+end
+
+local function divMetamethod(self: any, number: any): AlyaNum
+	return div(metamethodValue(self), metamethodValue(number))
+end
+
+local function powMetamethod(self: any, number: any): AlyaNum
+	return pow(metamethodValue(self), metamethodValue(number))
+end
+
+local function modMetamethod(self: any, number: any): AlyaNum
+	return mod(metamethodValue(self), metamethodValue(number))
+end
+
+local function equalsMetamethod(self: any, number: any): boolean
+	return equals(metamethodValue(self), metamethodValue(number))
+end
+
+local function lessThanMetamethod(self: any, number: any): boolean
+	return lessThan(metamethodValue(self), metamethodValue(number))
+end
+
+local function lessEqualsMetamethod(self: any, number: any): boolean
+	return lessEquals(metamethodValue(self), metamethodValue(number))
+end
+
 --- Alias for AlyaNum.equals. Checks if two AlyaNum objects are equal.
 AlyaNum.eq = AlyaNum.equals
 
@@ -2604,37 +2751,37 @@ AlyaNum.toSingle = AlyaNum.lbencode
 AlyaNum.fromSingle = AlyaNum.lbdecode
 
 --- Metamethod for addition.
-AlyaNum.__add = AlyaNum.add
+AlyaNum.__add = addMetamethod
 
 --- Metamethod for subtraction.
-AlyaNum.__sub = AlyaNum.sub
+AlyaNum.__sub = subMetamethod
 
 --- Metamethod for multiplication.
-AlyaNum.__mul = AlyaNum.mul
+AlyaNum.__mul = mulMetamethod
 
 --- Metamethod for division.
-AlyaNum.__div = AlyaNum.div
+AlyaNum.__div = divMetamethod
 
 --- Metamethod for exponentiation.
-AlyaNum.__pow = AlyaNum.pow
+AlyaNum.__pow = powMetamethod
 
 --- Metamethod for modulo.
-AlyaNum.__mod = AlyaNum.mod
+AlyaNum.__mod = modMetamethod
 
 --- Metamethod for equality.
-AlyaNum.__eq = AlyaNum.eq
+AlyaNum.__eq = equalsMetamethod
 
 --- Metamethod for less than.
-AlyaNum.__lt = AlyaNum.lt
+AlyaNum.__lt = lessThanMetamethod
 
 --- Metamethod for less than or equal.
-AlyaNum.__le = AlyaNum.le
+AlyaNum.__le = lessEqualsMetamethod
 
 --- Metamethod for unary minus.
-AlyaNum.__unm = AlyaNum.unm
+AlyaNum.__unm = unary
 
 --- Metamethod for converting AlyaNum to string.
-AlyaNum.__tostring = AlyaNum.toString
+AlyaNum.__tostring = toString
 
 --- Metamethod for concatenating AlyaNum with another value.
 AlyaNum.__concat = function(self: any, value: any): string
