@@ -315,7 +315,7 @@ local function createEternityBenchmarks(data, power: number?, scale: string?)
 		end,
 		toString = function()
 			return function()
-				local _ = EternityNum.toString(left)
+				local _ = EternityNum.short(left)
 			end
 		end,
 		comparison = function()
