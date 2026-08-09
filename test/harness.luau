@@ -148,7 +148,7 @@ local function run()
 	for _, registeredTest in ipairs(tests) do
 		local ok, err = pcall(registeredTest.fn)
 		if ok then
-			print("[PASS]", registeredTest.name)
+			--print("[PASS]", registeredTest.name)
 			passed += 1
 		else
 			print("[FAIL]", registeredTest.name, err)
