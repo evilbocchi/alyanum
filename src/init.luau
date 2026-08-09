@@ -1733,7 +1733,7 @@ end
 
 -- imported from serikanum
 function serikaNumEnforceDP(mantissa: number, exponent: number): string
-	local power = exponent == 0 and 1 or exponent == 1 and 10 or 100
+	local power = math.pow(10, exponent)
 	if DECIMAL_POINTS <= 0 then
 		return tostring(math.round(mantissa * power))
 	else
